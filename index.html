@@ -155,4 +155,97 @@
                 { type: 'recv', text: "그래서 저희가 혜택을 좀 드리려고 연락드린 겁니다. 이번 달 '국가안전보조금' 대상 업체로 선정해 드릴게요. 일단 지정 업체에 1억 입금해서 설치 끝내시면, 정부에서 8,000만 원 환급해 드립니다.", warn: "<b>[환급 빙자 사기]</b> 국가 보조금이나 환급금은 전화 한 통으로 결정되지 않습니다. 정부 환급은 정해진 공문을 통해 공식 절차로 이루어집니다." },
                 { type: 'sent', text: "환급이 확실하다면 하겠습니다만... 정말 돌려받을 수 있나요?" },
                 { type: 'recv', text: "대표님, 저 소방청 팀장입니다. 2,000만 원만 들이고 1억짜리 최신 장비 다 갖추시는 거예요. 리조트 품격도 올라가고 안전 점검도 프리패스입니다." },
-                { type: 'recv', text: "보조금 선착순이라 오늘 중으로 서류 넘겨야 합니다. 지금 바로 지정 업체 계좌로 1억 송금하세요. 늦으면 국고 환수
+                { type: 'recv', text: "보조금 선착순이라 오늘 중으로 서류 넘겨야 합니다. 지금 바로 지정 업체 계좌로 1억 송금하세요. 늦으면 국고 환수됩니다.", warn: "<b>[선착순 압박]</b> 혜택이 곧 사라질 것처럼 압박하는 것은 사기범들의 전형적인 기술입니다. 반드시 해당 관청 대표번호로 직접 전화해 사실 여부를 확인해야 합니다." },
+                { type: 'sent', text: "네, 지금 바로 입금하겠습니다." },
+                { type: 'recv', text: "[국가안전솔루션] 010-XXXX-XXXX 여기로 1억 송금하시고 사업자 사본 보내주세요. 확인 즉시 보조금 신청 들어갑니다." }
+            ],
+            result: "대규모 환급 빙자 사기", desc: "보조금을 구실로 억 단위 장비 구매를 유도한 뒤 잠적합니다."
+        }
+    ];
+
+    let currentScript = null;
+    let currentIndex = 0;
+    let isPaused = false;
+
+    function startSim(idx) {
+        currentScript = scripts[idx];
+        currentIndex = 0;
+        isPaused = false;
+        document.getElementById('menu-screen').style.display = 'none';
+        document.getElementById('chat-screen').style.display = 'flex';
+        document.getElementById('chat-area').innerHTML = '';
+        playNext();
+    }
+
+    async function playNext() {
+        if (isPaused || currentIndex >= currentScript.dialogs.length) {
+            if (currentIndex >= currentScript.dialogs.length) showFinalResult();
+            return;
+        }
+
+        const d = currentScript.dialogs[currentIndex];
+        const status = document.getElementById('status-bar');
+        status.innerText = d.type === 'recv' ? "상대방이 메시지를 작성 중..." : "피해자가 메시지를 작성 중...";
+
+        let speed = (currentIndex === 0) ? 300 : (d.type === 'recv' ? d.text.length * 20 + 1200 : 1200);
+
+        await new Promise(r => setTimeout(r, speed));
+        addBubble(d.type, d.text);
+        
+        if (d.warn) {
+            isPaused = true;
+            // 위험 포착 알림 지연시간: 기존 1.4초 + 요청 1.0초 = 2.4초
+            setTimeout(() => showDangerModal(d.warn), 2400);
+        } else {
+            currentIndex++;
+            playNext();
+        }
+    }
+
+    function addBubble(type, text) {
+        const area = document.getElementById('chat-area');
+        const m = document.createElement('div');
+        m.className = `msg ${type}`;
+        m.innerHTML = `<div class="bubble">${text}</div>`;
+        area.appendChild(m);
+        
+        setTimeout(() => {
+            m.classList.add('show');
+            area.scrollTop = area.scrollHeight;
+        }, 10);
+
+        if(text.includes("입금") || text.includes("결제") || text.includes("송금") || text.includes("만 원") || text.includes("억")) {
+            document.getElementById('status-bar').style.color = "#ff4444";
+            document.getElementById('status-bar').innerText = "⚠️ 위험 신호: 금전 거래 요구 포착!";
+        } else {
+            document.getElementById('status-bar').style.color = "#fff";
+        }
+    }
+
+    function showDangerModal(msg) {
+        document.getElementById('danger-msg').innerHTML = msg;
+        document.getElementById('danger-modal').style.display = 'flex';
+    }
+
+    function resumeSim() {
+        document.getElementById('danger-modal').style.display = 'none';
+        isPaused = false;
+        currentIndex++;
+        playNext();
+        setTimeout(() => {
+            document.getElementById('chat-area').scrollTop = document.getElementById('chat-area').scrollHeight;
+        }, 100);
+    }
+
+    function showFinalResult() {
+        // 최종 예방수칙 지연시간: 기존 2.3초 + 요청 0.7초 = 3.0초
+        setTimeout(() => {
+            document.getElementById('result-title').innerText = currentScript.result;
+            document.getElementById('result-desc').innerHTML = currentScript.desc + "<br><br><b>[대전경찰청 예방 지침]</b><br>1. 모르는 번호의 <b>대리 송금 요청</b>은 거절하세요.<br>2. 큰 돈을 보내기 전 반드시 <b>112</b>에 확인하세요.";
+            document.getElementById('result-modal').style.display = 'flex';
+        }, 3000);
+    }
+</script>
+
+</body>
+</html>
