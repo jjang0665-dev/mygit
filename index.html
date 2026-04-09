@@ -7,7 +7,7 @@
     <style>
         *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
         
-        /* 모바일 전체 화면 높이 고정 및 스크롤 방지 */
+        /* 모바일 전체 화면 높이 고정 */
         html, body { height: 100%; width: 100%; overflow: hidden; position: fixed; }
         body { background: #b2c7da; font-family: -apple-system, sans-serif; display: flex; flex-direction: column; }
         
@@ -16,6 +16,7 @@
         .info h1 { font-size: 17px; font-weight: bold; letter-spacing: -0.5px; }
         .info p { font-size: 11px; color: rgba(255,255,255,0.7); }
 
+        /* 메뉴 화면 */
         #menu-screen { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; background: #f4f4f4; -webkit-overflow-scrolling: touch; }
         .menu-instr { font-size: 14px; color: #444; margin-bottom: 8px; font-weight: bold; border-left: 4px solid #1a237e; padding-left: 10px; }
         .menu-card { background: #fff; padding: 16px; border-radius: 15px; border: 1px solid #ddd; cursor: pointer; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -24,6 +25,7 @@
         .menu-text h2 { font-size: 14px; color: #1a237e; font-weight: bold; }
         .menu-text p { font-size: 11px; color: #666; margin-top: 2px; }
 
+        /* 채팅 화면 */
         #chat-screen { display: none; flex-direction: column; height: 100%; flex: 1; position: relative; overflow: hidden; }
         #chat-area { flex: 1; overflow-y: scroll; padding: 15px; display: flex; flex-direction: column; gap: 15px; background: #b2c7da; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
         #chat-area::-webkit-scrollbar { display: none; }
@@ -37,6 +39,9 @@
         .sent .bubble { background: #fee500; color: #000; border-top-right-radius: 2px; }
 
         #status-bar { background: #1a237e; color: #fff; padding: 12px; text-align: center; font-size: 13px; font-weight: bold; flex-shrink: 0; }
+
+        /* 일시정지 인디케이터 */
+        #pause-overlay { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.6); color: #fff; padding: 15px 25px; border-radius: 30px; font-weight: bold; font-size: 14px; pointer-events: none; z-index: 50; align-items: center; gap: 10px; }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         #danger-modal { background: rgba(0,0,0,0.85); }
@@ -60,7 +65,7 @@
 </header>
 
 <div id="menu-screen">
-    <div class="menu-instr">사기가 의심되는 결정적 순간을 확인하세요</div>
+    <div class="menu-instr">수법을 선택하면 자동으로 시연됩니다 (화면 클릭 시 정지)</div>
     <div class="menu-card" onclick="startSim(0)"><div class="menu-icon">🍽</div><div class="menu-text"><h2>1. 식당 예약형 (300만 원 선)</h2><p>단체 예약 후 고가주류 대리결제 유도</p></div></div>
     <div class="menu-card" onclick="startSim(1)"><div class="menu-icon">🪖</div><div class="menu-text"><h2>2. 재화용역 계약형 (1,000만 원)</h2><p>군부대 사칭, 장비 선구매 및 대금 편취</p></div></div>
     <div class="menu-card" onclick="startSim(2)"><div class="menu-icon">📋</div><div class="menu-text"><h2>3. 긴급감사 사칭형 (3,000만 원)</h2><p>소방/위생 감사 협박, 즉시 결제 유도</p></div></div>
@@ -68,8 +73,9 @@
     <div class="menu-card" onclick="startSim(4)"><div class="menu-icon">🛡</div><div class="menu-text"><h2>5. 안전 점검형 (1억 원)</h2><p>대형 리조트 등 안전장비 환급 빙자 사기</p></div></div>
 </div>
 
-<div id="chat-screen">
+<div id="chat-screen" onclick="togglePause()">
     <div id="chat-area"></div>
+    <div id="pause-overlay">⏸ 일시 정지 (다시 클릭하면 재개)</div>
     <div id="status-bar">상대방의 대화를 분석 중입니다...</div>
 </div>
 
@@ -116,7 +122,7 @@
                 { type: 'sent', text: "네, 이 중령님! 영광입니다. 저희가 어떤 부분을 준비하면 될까요?" },
                 { type: 'recv', text: "총 공사 규모는 12억 원으로 책정되었습니다. 지역 우수 업체로 추천받으셔서 저희가 우선 선정 대상으로 검토 중입니다." },
                 { type: 'sent', text: "12억 원이나요? 정말 감사합니다. 최선을 다하겠습니다." },
-                { type: 'recv', text: "다만, 군 보안 지침상 입찰 실사 전에 부대 내에 '마노 미터기' 특수 센서 30개가 먼저 확보되어야 합니다. 이게 없으면 실사 통과가 안 돼요.", warn: "<b>[허위 조건 제시]</b> 공공기관이나 군부대는 입찰 조건으로 특정 물품의 선구매를 요구하지 않습니다. 생소한 장비 이름을 대며 특정 업체 구입을 강요한다면 사기입니다." },
+                { type: 'recv', text: "다만, 군 보안 지침상 입찰 실사 전에 부대 내에 '마노 미터기' 특수 센서 30개가 먼저 확보되어야 합니다. 이게 없으면 실사 통과가 안 돼요.", warn: "<b>[허위 조건 제시]</b> 공공기관은 입찰 조건으로 특정 물품의 선구매를 요구하지 않습니다. 생소한 장비 이름을 대며 특정 업체 구입을 강요한다면 사기입니다." },
                 { type: 'sent', text: "저희는 취급하지 않는 품목인데, 어디서 구해야 하죠?" },
                 { type: 'recv', text: "그래서 저희가 거래하는 지정 보급처(010-XXXX)를 연결해 드리는 겁니다. 거기가 한 세트 33만 원씩, 총 1,000만 원인데 선결제 하시고 영수증 보내주세요." },
                 { type: 'recv', text: "이건 국가 예산으로 100% 정산되어 다음 달 공사 대금과 함께 입금됩니다. 대표님, 이 기회 놓치시면 다른 업체로 넘어갑니다.", warn: "<b>[가짜 업체 알선]</b> 사기범은 본인과 공모한 가짜 유통사 연락처를 알려줍니다. 국가 예산으로 보전해 준다는 말은 전형적인 거짓말입니다." },
@@ -174,21 +180,42 @@
 
     let currentScript = null;
     let currentIndex = 0;
-    let isPaused = false;
+    let isPaused = false; // 위험 지점 포착용 (자동 재개 안 됨)
+    let isGlobalPaused = false; // 사용자 클릭 정지용
 
     function startSim(idx) {
         currentScript = scripts[idx];
         currentIndex = 0;
         isPaused = false;
+        isGlobalPaused = false;
         document.getElementById('menu-screen').style.display = 'none';
         document.getElementById('chat-screen').style.display = 'flex';
         document.getElementById('chat-area').innerHTML = '';
+        document.getElementById('pause-overlay').style.display = 'none';
         playNext();
     }
 
+    // 일시정지 토글 함수
+    function togglePause() {
+        if (isPaused) return; // 위험 경고창이 떠 있을 때는 사용자 정지 무시
+        
+        isGlobalPaused = !isGlobalPaused;
+        const overlay = document.getElementById('pause-overlay');
+        
+        if (isGlobalPaused) {
+            overlay.style.display = 'flex';
+            document.getElementById('status-bar').innerText = "일시 정지됨";
+        } else {
+            overlay.style.display = 'none';
+            document.getElementById('status-bar').innerText = "재개 중...";
+            playNext(); // 정지 해제 시 다음 단계 실행
+        }
+    }
+
     async function playNext() {
-        if (isPaused || currentIndex >= currentScript.dialogs.length) {
-            if (currentIndex >= currentScript.dialogs.length) showFinalResult();
+        // 어떠한 이유로든 정지 상태거나 끝났으면 중단
+        if (isPaused || isGlobalPaused || currentIndex >= currentScript.dialogs.length) {
+            if (currentIndex >= currentScript.dialogs.length && !isGlobalPaused) showFinalResult();
             return;
         }
 
@@ -196,29 +223,37 @@
         const status = document.getElementById('status-bar');
         status.innerText = d.type === 'recv' ? "상대방이 메시지를 작성 중..." : "피해자가 메시지를 작성 중...";
 
-        // 속도 설정 로직
         let speed;
         if (currentIndex === 0) {
-            speed = 300; // 첫 메시지 즉시 시작
+            speed = 300;
         } else {
-            let baseSpeed = (d.type === 'recv') ? (d.text.length * 20 + 1200) : 1200;
+            let baseSpeed = (d.type === 'recv' ? d.text.length * 20 + 1200 : 1200);
             const prevD = currentScript.dialogs[currentIndex - 1];
-            
-            // 사기범이 연속으로 말할 때 2초 추가 지연
-            if (prevD.type === 'recv' && d.type === 'recv') {
-                speed = baseSpeed + 2000;
-            } else {
-                speed = baseSpeed;
-            }
+            if (prevD.type === 'recv' && d.type === 'recv') baseSpeed += 2000;
+            speed = baseSpeed;
         }
 
         await new Promise(r => setTimeout(r, speed));
+        
+        // 지연 시간 후 다시 한 번 체크 (지연 중에 사용자가 멈췄을 수 있음)
+        if (isGlobalPaused) return;
+
         addBubble(d.type, d.text);
         
         if (d.warn) {
             isPaused = true;
-            // 위험수칙 알림 지연시간: 5초(5000ms)
-            setTimeout(() => showDangerModal(d.warn), 5000);
+            setTimeout(() => {
+                if (!isGlobalPaused) showDangerModal(d.warn);
+                else {
+                    // 사용자가 일시정지한 상태면 경고창 띄우는 것도 보류
+                    const checkInterval = setInterval(() => {
+                        if (!isGlobalPaused) {
+                            showDangerModal(d.warn);
+                            clearInterval(checkInterval);
+                        }
+                    }, 500);
+                }
+            }, 5000);
         } else {
             currentIndex++;
             playNext();
@@ -239,7 +274,7 @@
 
         if(text.includes("입금") || text.includes("결제") || text.includes("송금") || text.includes("만 원") || text.includes("억")) {
             document.getElementById('status-bar').style.color = "#ff4444";
-            document.getElementById('status-bar').innerText = "⚠️ 위험 신호: 금전 거래 요구 포착!";
+            document.getElementById('status-bar').innerText = "⚠️ 위험 신호 포착!";
         } else {
             document.getElementById('status-bar').style.color = "#fff";
         }
@@ -255,14 +290,11 @@
         isPaused = false;
         currentIndex++;
         playNext();
-        setTimeout(() => {
-            document.getElementById('chat-area').scrollTop = document.getElementById('chat-area').scrollHeight;
-        }, 100);
     }
 
     function showFinalResult() {
-        // 결과창 지연시간: 3초(3000ms)
         setTimeout(() => {
+            if (isGlobalPaused) return;
             document.getElementById('result-title').innerText = currentScript.result;
             document.getElementById('result-desc').innerHTML = currentScript.desc + "<br><br><b>[대전경찰청 예방 지침]</b><br>1. 모르는 번호의 <b>대리 송금 요청</b>은 거절하세요.<br>2. 큰 돈을 보내기 전 반드시 <b>112</b>에 확인하세요.";
             document.getElementById('result-modal').style.display = 'flex';
