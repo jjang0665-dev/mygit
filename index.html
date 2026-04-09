@@ -23,7 +23,7 @@
 
         #chat-screen{flex:1;display:none;flex-direction:column;position:relative}
         #chat-area{flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:15px;padding-bottom:100px}
-        .msg{display:flex;flex-direction:column;max-width:85%;gap:4px;opacity:0;transform:translateY(15px);transition:all 0.4s ease-out}
+        .msg{display:flex;flex-direction:column;max-width:85%;gap:4px;opacity:0;transform:translateY(15px);transition:all 0.5s ease-out}
         .msg.show{opacity:1;transform:translateY(0)}
         .msg.recv{align-self:flex-start}
         .msg.sent{align-self:flex-end;align-items:flex-end}
@@ -208,12 +208,18 @@
         const area = document.getElementById('chat-area');
         const status = document.getElementById('status-bar');
 
-        for (let d of sc.dialogs) {
+        for (let i = 0; i < sc.dialogs.length; i++) {
+            let d = sc.dialogs[i];
             status.innerText = d.type === 'recv' ? "상대방이 메시지를 작성 중..." : "피해자가 메시지를 작성 중...";
             
-            // 대화 속도 조정 (이전보다 약 1.5배~2배 빠르게)
-            let typingSpeed = d.text.length * 20 + 800; // 글자 가중치 40->20, 기본 대기 1500->800
-            if(d.type === 'sent') typingSpeed = 700; // 피해자 답변 대기 1200->700
+            let typingSpeed;
+            if (i === 0) {
+                // 초입부: 대기 시간 0.3초 (아주 빠르게 시작)
+                typingSpeed = 300;
+            } else {
+                // 일반 대화: 이전보다 0.2초씩 느리게 조정
+                typingSpeed = d.type === 'recv' ? (d.text.length * 20 + 1000) : 900;
+            }
             
             await new Promise(r => setTimeout(r, typingSpeed));
             
@@ -227,11 +233,12 @@
             if(d.text.includes("입금") || d.text.includes("결제") || d.text.includes("송금") || d.text.includes("만 원") || d.text.includes("억")) {
                 status.style.color = "#ff4444";
                 status.innerText = "⚠️ 위험 신호: 금전 거래 요구 포착!";
-                await new Promise(r => setTimeout(r, 600));
+                await new Promise(r => setTimeout(r, 800));
             }
         }
 
-        await new Promise(r => setTimeout(r, 2000));
+        // 결과 분석창 지연시간: 2.3초 (이전보다 0.3초 늦게)
+        await new Promise(r => setTimeout(r, 2300));
         document.getElementById('result-title').innerText = sc.result;
         document.getElementById('result-desc').innerHTML = sc.desc + "<br><br><b>[대전경찰청 예방 지침]</b><br>1. 모르는 번호로 온 <b>대리 결제/송금 요청</b>은 100% 사기입니다.<br>2. 큰 금액일수록 반드시 공식 번호를 통해 <b>교차 확인</b>하십시오.<br>3. 입금 전 반드시 <b>112</b>에 먼저 문의하십시오.";
         document.getElementById('overlay').style.display = 'flex';
