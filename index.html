@@ -6,16 +6,12 @@
     <title>사기 수법 시연 — 대전경찰청</title>
     <style>
         *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-        
-        /* 모바일 전체 화면 높이 고정 및 스크롤 방지 */
         html, body { height: 100%; width: 100%; overflow: hidden; position: fixed; }
         body { background: #b2c7da; font-family: -apple-system, sans-serif; display: flex; flex-direction: column; }
-        
         header { background: #1a237e; color: #fff; padding: 15px; display: flex; align-items: center; gap: 12px; z-index: 10; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
         .profile-img { width: 42px; height: 42px; background: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; border: 2px solid #ffd700; }
         .info h1 { font-size: 17px; font-weight: bold; letter-spacing: -0.5px; }
         .info p { font-size: 11px; color: rgba(255,255,255,0.7); }
-
         #menu-screen { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; background: #f4f4f4; -webkit-overflow-scrolling: touch; }
         .menu-instr { font-size: 14px; color: #444; margin-bottom: 8px; font-weight: bold; border-left: 4px solid #1a237e; padding-left: 10px; }
         .menu-card { background: #fff; padding: 16px; border-radius: 15px; border: 1px solid #ddd; cursor: pointer; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -23,11 +19,9 @@
         .menu-icon { font-size: 24px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: #e8eaf6; border-radius: 10px; }
         .menu-text h2 { font-size: 14px; color: #1a237e; font-weight: bold; }
         .menu-text p { font-size: 11px; color: #666; margin-top: 2px; }
-
         #chat-screen { display: none; flex-direction: column; height: 100%; flex: 1; position: relative; overflow: hidden; }
         #chat-area { flex: 1; overflow-y: scroll; padding: 15px; display: flex; flex-direction: column; gap: 15px; background: #b2c7da; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
         #chat-area::-webkit-scrollbar { display: none; }
-
         .msg { display: flex; flex-direction: column; max-width: 85%; gap: 4px; opacity: 0; transform: translateY(15px); transition: all 0.5s ease-out; flex-shrink: 0; }
         .msg.show { opacity: 1; transform: translateY(0); }
         .msg.recv { align-self: flex-start; }
@@ -35,13 +29,10 @@
         .bubble { padding: 12px 16px; border-radius: 18px; font-size: 14.5px; line-height: 1.6; box-shadow: 0 1px 3px rgba(0,0,0,0.1); word-break: keep-all; }
         .recv .bubble { background: #fff; color: #000; border-top-left-radius: 2px; }
         .sent .bubble { background: #fee500; color: #000; border-top-right-radius: 2px; }
-
         #status-bar { background: #1a237e; color: #fff; padding: 12px; text-align: center; font-size: 13px; font-weight: bold; flex-shrink: 0; }
-
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         #danger-modal { background: rgba(0,0,0,0.85); }
         #result-modal { background: rgba(0,0,0,0.95); }
-        
         .alert-card { background: #fff; padding: 25px; border-radius: 20px; text-align: center; max-width: 360px; border-top: 8px solid #d32f2f; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .alert-card h2 { color: #d32f2f; font-size: 20px; margin-bottom: 15px; }
         .alert-card p { font-size: 14.5px; line-height: 1.7; color: #333; margin-bottom: 20px; text-align: left; }
@@ -55,7 +46,7 @@
     <div id="header-icon" class="profile-img">참</div>
     <div class="info">
         <h1 id="header-title">대전경찰청 사기 수법 시연</h1>
-        <p id="header-sub">공식 범죄예방 교육 시스템</p>
+        <p id="header-sub">실제 범행 사례 기반 자동 시연 시스템</p>
     </div>
 </header>
 
@@ -112,13 +103,16 @@
         {
             title: "2. 재화용역 계약형 (1,000만 원)", icon: "🪖",
             dialogs: [
-                { type: 'recv', text: "안녕하십니까, 육군본부 시설본부 이 중령입니다. 귀사 설비 입찰 건으로 연락드렸습니다." },
-                { type: 'sent', text: "네, 중령님! 영광입니다." },
-                { type: 'recv', text: "이번 부대 현대화 사업 규모가 5억 원입니다. 지역 업체 우선 선정 대상이시라 긍정적으로 검토 중입니다." },
-                { type: 'recv', text: "다만, 설치 전 '마노 미터기' 30개가 먼저 확보되어야 실사가 가능합니다.", warn: "<b>[허위 조건 제시]</b> 공공기관은 특정 물품의 선구매를 입찰 조건으로 요구하지 않습니다." },
-                { type: 'sent', text: "저희는 취급하지 않는 품목인데요?" },
-                { type: 'recv', text: "그래서 지정 보급처(010-XXXX)를 연결해 드리는 겁니다. 1,000만 원 선결제 하시고 영수증 보내주세요.", warn: "<b>[가짜 업체 알선]</b> 사기범은 본인과 공모한 가짜 업체로 입금을 유도합니다." },
-                { type: 'recv', text: "대표님, 저 중령입니다. 믿고 진행하세요. 지금 바로 처리해 주세요." }
+                { type: 'recv', text: "안녕하십니까, 육군본부 시설관리본부 이 중령입니다. 대표님, 이번 예비군 훈련장 별관 신축 공사 입찰 건으로 연락드렸습니다." },
+                { type: 'sent', text: "네, 이 중령님! 영광입니다. 저희가 어떤 부분을 준비하면 될까요?" },
+                { type: 'recv', text: "총 공사 규모는 12억 원으로 책정되었습니다. 지역 우수 업체로 추천받으셔서 저희가 우선 선정 대상으로 검토 중입니다." },
+                { type: 'sent', text: "12억 원이나요? 정말 감사합니다. 최선을 다하겠습니다." },
+                { type: 'recv', text: "다만, 군 보안 지침상 입찰 실사 전에 부대 내에 '마노 미터기' 특수 센서 30개가 먼저 확보되어야 합니다. 이게 없으면 실사 통과가 안 돼요.", warn: "<b>[허위 조건 제시]</b> 공공기관이나 군부대는 입찰 조건으로 특정 물품의 선구매를 요구하지 않습니다. 생소한 장비 이름을 대며 특정 업체 구입을 강요한다면 사기입니다." },
+                { type: 'sent', text: "저희는 취급하지 않는 품목인데, 어디서 구해야 하죠?" },
+                { type: 'recv', text: "그래서 저희가 거래하는 지정 보급처(010-XXXX)를 연결해 드리는 겁니다. 거기가 한 세트 33만 원씩, 총 1,000만 원인데 선결제 하시고 영수증 보내주세요." },
+                { type: 'recv', text: "이건 국가 예산으로 100% 정산되어 다음 달 공사 대금과 함께 입금됩니다. 대표님, 이 기회 놓치시면 다른 업체로 넘어갑니다.", warn: "<b>[가짜 업체 알선]</b> 사기범은 본인과 공모한 가짜 유통사 연락처를 알려줍니다. 국가 예산으로 보전해 준다는 말은 전형적인 거짓말입니다." },
+                { type: 'sent', text: "금액이 꽤 되네요... 중령님 믿고 진행해도 되겠습니까?" },
+                { type: 'recv', text: "대표님, 저 육군 중령입니다. 부대 정문에 제 이름 대시면 바로 확인 가능해요. 오늘 4시까지 입금 안 되면 입찰 취소되니 바로 처리해 주세요." }
             ],
             result: "군부대 사칭 납품 사기", desc: "대형 계약을 미끼로 가짜 업체에 물품 대금을 입금하게 합니다."
         },
@@ -161,104 +155,4 @@
                 { type: 'recv', text: "그래서 저희가 혜택을 좀 드리려고 연락드린 겁니다. 이번 달 '국가안전보조금' 대상 업체로 선정해 드릴게요. 일단 지정 업체에 1억 입금해서 설치 끝내시면, 정부에서 8,000만 원 환급해 드립니다.", warn: "<b>[환급 빙자 사기]</b> 국가 보조금이나 환급금은 전화 한 통으로 결정되지 않습니다. 정부 환급은 정해진 공문을 통해 공식 절차로 이루어집니다." },
                 { type: 'sent', text: "환급이 확실하다면 하겠습니다만... 정말 돌려받을 수 있나요?" },
                 { type: 'recv', text: "대표님, 저 소방청 팀장입니다. 2,000만 원만 들이고 1억짜리 최신 장비 다 갖추시는 거예요. 리조트 품격도 올라가고 안전 점검도 프리패스입니다." },
-                { type: 'recv', text: "보조금 선착순이라 오늘 중으로 서류 넘겨야 합니다. 지금 바로 지정 업체 계좌로 1억 송금하세요. 늦으면 국고 환수됩니다.", warn: "<b>[선착순 압박]</b> 혜택이 곧 사라질 것처럼 압박하는 것은 사기범들의 전형적인 기술입니다. 반드시 해당 관청 대표번호로 직접 전화해 사실 여부를 확인해야 합니다." },
-                { type: 'sent', text: "네, 지금 바로 입금하겠습니다." },
-                { type: 'recv', text: "[국가안전솔루션] 010-XXXX-XXXX 여기로 1억 송금하시고 사업자 사본 보내주세요. 확인 즉시 보조금 신청 들어갑니다." }
-            ],
-            result: "대규모 환급 빙자 사기", desc: "보조금을 구실로 억 단위 장비 구매를 유도한 뒤 잠적합니다."
-        }
-    ];
-
-    let currentScript = null;
-    let currentIndex = 0;
-    let isPaused = false;
-
-    function startSim(idx) {
-        currentScript = scripts[idx];
-        currentIndex = 0;
-        isPaused = false;
-        document.getElementById('menu-screen').style.display = 'none';
-        document.getElementById('chat-screen').style.display = 'flex';
-        document.getElementById('chat-area').innerHTML = '';
-        playNext();
-    }
-
-    async function playNext() {
-        if (isPaused || currentIndex >= currentScript.dialogs.length) {
-            if (currentIndex >= currentScript.dialogs.length) showFinalResult();
-            return;
-        }
-
-        const d = currentScript.dialogs[currentIndex];
-        const status = document.getElementById('status-bar');
-        status.innerText = d.type === 'recv' ? "상대방이 메시지를 작성 중..." : "피해자가 메시지를 작성 중...";
-
-        let speed;
-        if (currentIndex === 0) {
-            speed = 300; // 첫 메시지는 즉시 시작
-        } else {
-            // 사기범(recv): 글자당 20ms + 기본 1200ms (이전보다 0.2초 여유 추가)
-            // 피해자(sent): 1200ms (이전 0.9초에서 0.3초 추가 지연)
-            speed = (d.type === 'recv') ? (d.text.length * 20 + 1200) : 1200;
-        }
-
-        await new Promise(r => setTimeout(r, speed));
-        addBubble(d.type, d.text);
-        
-        if (d.warn) {
-            isPaused = true;
-            // 위험 포착 알림을 총 1.4초 지연 (메시지 읽는 시간 확보)
-            setTimeout(() => showDangerModal(d.warn), 1400);
-        } else {
-            currentIndex++;
-            playNext();
-        }
-    }
-
-    function addBubble(type, text) {
-        const area = document.getElementById('chat-area');
-        const m = document.createElement('div');
-        m.className = `msg ${type}`;
-        m.innerHTML = `<div class="bubble">${text}</div>`;
-        area.appendChild(m);
-        
-        setTimeout(() => {
-            m.classList.add('show');
-            area.scrollTop = area.scrollHeight;
-        }, 10);
-
-        if(text.includes("입금") || text.includes("결제") || text.includes("송금") || text.includes("만 원") || text.includes("억")) {
-            document.getElementById('status-bar').style.color = "#ff4444";
-            document.getElementById('status-bar').innerText = "⚠️ 위험 신호: 금전 거래 요구 포착!";
-        } else {
-            document.getElementById('status-bar').style.color = "#fff";
-        }
-    }
-
-    function showDangerModal(msg) {
-        document.getElementById('danger-msg').innerHTML = msg;
-        document.getElementById('danger-modal').style.display = 'flex';
-    }
-
-    function resumeSim() {
-        document.getElementById('danger-modal').style.display = 'none';
-        isPaused = false;
-        currentIndex++;
-        playNext();
-        setTimeout(() => {
-            const area = document.getElementById('chat-area');
-            area.scrollTop = area.scrollHeight;
-        }, 100);
-    }
-
-    function showFinalResult() {
-        setTimeout(() => {
-            document.getElementById('result-title').innerText = currentScript.result;
-            document.getElementById('result-desc').innerHTML = currentScript.desc + "<br><br><b>[대전경찰청 예방 지침]</b><br>1. 모르는 번호의 <b>대리 송금 요청</b>은 거절하세요.<br>2. 큰 돈을 보내기 전 반드시 <b>112</b>에 확인하세요.";
-            document.getElementById('result-modal').style.display = 'flex';
-        }, 2300);
-    }
-</script>
-
-</body>
-</html>
+                { type: 'recv', text: "보조금 선착순이라 오늘 중으로 서류 넘겨야 합니다. 지금 바로 지정 업체 계좌로 1억 송금하세요. 늦으면 국고 환수
