@@ -196,14 +196,28 @@
         const status = document.getElementById('status-bar');
         status.innerText = d.type === 'recv' ? "상대방이 메시지를 작성 중..." : "피해자가 메시지를 작성 중...";
 
-        let speed = (currentIndex === 0) ? 300 : (d.type === 'recv' ? d.text.length * 20 + 1200 : 1200);
+        // 속도 설정 로직
+        let speed;
+        if (currentIndex === 0) {
+            speed = 300; // 첫 메시지 즉시 시작
+        } else {
+            let baseSpeed = (d.type === 'recv') ? (d.text.length * 20 + 1200) : 1200;
+            const prevD = currentScript.dialogs[currentIndex - 1];
+            
+            // 사기범이 연속으로 말할 때 2초 추가 지연
+            if (prevD.type === 'recv' && d.type === 'recv') {
+                speed = baseSpeed + 2000;
+            } else {
+                speed = baseSpeed;
+            }
+        }
 
         await new Promise(r => setTimeout(r, speed));
         addBubble(d.type, d.text);
         
         if (d.warn) {
             isPaused = true;
-            // 위험수칙 알림 지연시간: 대화 출력 후 5초(5000ms) 뒤에 발생
+            // 위험수칙 알림 지연시간: 5초(5000ms)
             setTimeout(() => showDangerModal(d.warn), 5000);
         } else {
             currentIndex++;
@@ -247,7 +261,7 @@
     }
 
     function showFinalResult() {
-        // 결과창 지연시간: 마지막 대화 출력 3초(3000ms) 뒤에 발생
+        // 결과창 지연시간: 3초(3000ms)
         setTimeout(() => {
             document.getElementById('result-title').innerText = currentScript.result;
             document.getElementById('result-desc').innerHTML = currentScript.desc + "<br><br><b>[대전경찰청 예방 지침]</b><br>1. 모르는 번호의 <b>대리 송금 요청</b>은 거절하세요.<br>2. 큰 돈을 보내기 전 반드시 <b>112</b>에 확인하세요.";
