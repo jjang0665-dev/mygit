@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>기관사칭 사기 자동 시연관 — 대전경찰청</title>
+    <title>기관사칭 사기 시뮬레이터 — 대전경찰청</title>
     <style>
         *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
         body{background:#b2c7da;font-family:-apple-system,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
@@ -14,19 +14,18 @@
         .info h1{font-size:15px;font-weight:bold}
         .info p{font-size:11px;color:#aaa}
 
-        /* 메인 화면 (수법 선택) */
-        #menu-screen{flex:1;padding:20px;display:flex;flex-direction:column;gap:15px;overflow-y:auto;background:#f0f0f0}
-        .menu-title{font-size:18px;font-weight:bold;margin-bottom:5px;color:#222}
-        .menu-card{background:#fff;padding:18px;border-radius:15px;border:1px solid #ddd;cursor:pointer;display:flex;align-items:center;gap:15px;transition:0.2s}
-        .menu-card:active{transform:scale(0.98);background:#f9f9f9}
-        .menu-icon{font-size:28px;width:50px;height:50px;display:flex;align-items:center;justify-content:center;background:#f5f5f5;border-radius:12px}
-        .menu-text h2{font-size:15px;color:#333}
-        .menu-text p{font-size:12px;color:#777;margin-top:3px}
+        /* 메인 화면 */
+        #menu-screen{flex:1;padding:20px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;background:#f0f0f0}
+        .menu-card{background:#fff;padding:16px;border-radius:15px;border:1px solid #ddd;cursor:pointer;display:flex;align-items:center;gap:15px}
+        .menu-card:active{background:#ececec}
+        .menu-icon{font-size:24px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:#f5f5f5;border-radius:10px}
+        .menu-text h2{font-size:14px;color:#333}
+        .menu-text p{font-size:11px;color:#777}
 
-        /* 채팅 영역 */
+        /* 채팅 화면 */
         #chat-screen{flex:1;display:none;flex-direction:column;position:relative}
-        #chat-area{flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:12px}
-        .msg{display:flex;flex-direction:column;max-width:85%;gap:4px;opacity:0;transform:translateY(10px);transition:all 0.4s ease}
+        #chat-area{flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:12px;padding-bottom:100px}
+        .msg{display:flex;flex-direction:column;max-width:85%;gap:4px;opacity:0;transform:translateY(10px);transition:0.3s ease-out}
         .msg.show{opacity:1;transform:translateY(0)}
         .msg.recv{align-self:flex-start}
         .msg.sent{align-self:flex-end;align-items:flex-end}
@@ -34,14 +33,14 @@
         .recv .bubble{background:#fff;color:#000;border-top-left-radius:2px}
         .sent .bubble{background:#fee500;color:#000;border-top-right-radius:2px}
 
-        /* 하단 바 */
-        #status-bar{background:#3a3a3c;color:#fff;padding:10px;text-align:center;font-size:12px;font-weight:bold}
+        /* 하단 상태바 */
+        #status-bar{background:#3a3a3c;color:#fff;padding:12px;text-align:center;font-size:12px;font-weight:bold}
 
-        /* 분석 오버레이 */
-        #overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:100;flex-direction:column;align-items:center;justify-content:center;padding:30px}
+        /* 분석 결과 */
+        #overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:100;flex-direction:column;align-items:center;justify-content:center;padding:20px}
         .analysis-card{background:#fff;padding:25px;border-radius:20px;text-align:center;max-width:340px}
-        .danger-tag{background:#dc2626;color:#fff;padding:4px 10px;border-radius:5px;font-size:12px;font-weight:bold;margin-bottom:10px;display:inline-block}
-        .btn-home{background:#000;color:#fff;border:none;padding:12px 25px;border-radius:10px;margin-top:20px;cursor:pointer;width:100%}
+        .danger-tag{background:#dc2626;color:#fff;padding:4px 10px;border-radius:5px;font-size:12px;font-weight:bold;margin-bottom:15px;display:inline-block}
+        .btn-home{background:#000;color:#fff;border:none;padding:15px;border-radius:10px;margin-top:20px;cursor:pointer;width:100%;font-weight:bold}
     </style>
 </head>
 <body>
@@ -49,60 +48,49 @@
 <header>
     <div id="header-icon" class="profile-img">🏠</div>
     <div class="info">
-        <h1 id="header-title">범죄예방 자동 시연 시스템</h1>
-        <p id="header-sub">대전경찰청 공식 홍보 페이지</p>
+        <h1 id="header-title">범죄예방 시연 시스템</h1>
+        <p id="header-sub">대전경찰청 범죄예방계</p>
     </div>
 </header>
 
-<!-- 수법 선택 메뉴 -->
 <div id="menu-screen">
-    <p class="menu-title">체험할 수법을 선택하세요</p>
+    <div style="font-size:13px; color:#666; margin-bottom:10px; font-weight:bold">체험할 실제 수법 선택</div>
     
     <div class="menu-card" onclick="startSim(0)">
         <div class="menu-icon">🍽</div>
         <div class="menu-text">
-            <h2>1-① 식당 예약형</h2>
-            <p>고급 주류(궈자오) 대리구매 및 송금 유도</p>
+            <h2>식당 예약형 (노쇼 사기)</h2>
+            <p>'궈자오 30년산' 대리 결제 유도</p>
         </div>
     </div>
 
     <div class="menu-card" onclick="startSim(1)">
         <div class="menu-icon">🪖</div>
         <div class="menu-text">
-            <h2>1-② 재화·용역 계약형</h2>
-            <p>군부대 사칭, '마노 미터기' 선구매 요구</p>
+            <h2>군부대 사칭 (박대위)</h2>
+            <p>'마노 미터기' 입찰 선구매 유도</p>
         </div>
     </div>
 
     <div class="menu-card" onclick="startSim(2)">
-        <div class="menu-icon">🔬</div>
-        <div class="menu-text">
-            <h2>1-④ 단가 상승·우회 구매형</h2>
-            <p>연구원 사칭, 기존 업체 단가 상승 핑계로 결제 유도</p>
-        </div>
-    </div>
-
-    <div class="menu-card" onclick="startSim(3)">
         <div class="menu-icon">🔥</div>
         <div class="menu-text">
-            <h2>2. 안전 점검형 (소방·지자체)</h2>
-            <p>점검 전 '질식소화포' 비치 요구 및 대금 편취</p>
+            <h2>소방 안전 점검형 (팀장)</h2>
+            <p>'질식소화포' 구매 환급 빙자 사기</p>
         </div>
     </div>
 </div>
 
-<!-- 채팅 화면 -->
 <div id="chat-screen">
     <div id="chat-area"></div>
-    <div id="status-bar">자동 시연 대기 중...</div>
+    <div id="status-bar">대화 분석 중...</div>
 </div>
 
-<!-- 분석 결과 오버레이 -->
 <div id="overlay">
     <div class="analysis-card">
-        <div class="danger-tag">경찰 분석 결과</div>
+        <div class="danger-tag">경찰 수법 분석 결과</div>
         <h3 id="result-title" style="margin-bottom:10px"></h3>
-        <p id="result-desc" style="font-size:13px; color:#555; line-height:1.6"></p>
+        <p id="result-desc" style="font-size:13.5px; color:#444; line-height:1.7; text-align:left; word-break:keep-all"></p>
         <button class="btn-home" onclick="location.reload()">다른 수법 보기</button>
     </div>
 </div>
@@ -110,70 +98,65 @@
 <script>
     const scripts = [
         {
-            title: "식당 예약형 (김준호)",
+            title: "식당 예약 사기 (김준호)",
             icon: "🍽",
             dialogs: [
-                { type: 'recv', text: "안녕하세요 사장님, 어제 저녁에 8명 회식 예약했던 김준호입니다." },
-                { type: 'sent', text: "네, 사장님. 확인했습니다. 무슨 일이신가요?" },
-                { type: 'recv', text: "저희가 마실 술 '궈자오 30년산'을 업체에 주문했는데 거기가 현금만 받아서요." },
-                { type: 'recv', text: "지금 운전 중이라 뱅킹이 안 되는데 90만원만 먼저 입금해 주시면 가서 합쳐서 긁을게요." },
-                { type: 'sent', text: "알겠습니다. 계좌번호 보내주세요." },
-                { type: 'recv', text: "[중화주류] 여기로 입금하시고 확인 부탁드려요. (입금 후 잠적)" }
+                { type: 'recv', text: "사장님, 안녕하세요! 어제 저녁에 20명 단체 회식 예약했던 김준호입니다. 기억나시죠?" },
+                { type: 'sent', text: "네, 사장님. 8시 예약 확인했습니다. 준비 잘하고 있어요." },
+                { type: 'recv', text: "아유, 감사합니다. 근데 사장님, 저희가 귀한 손님들이라 '궈자오 30년산' 양주가 2병 꼭 필요한데..." },
+                { type: 'recv', text: "저희 단골 주류업체에 전화하니 현금 결제만 된다고 하네요. 제가 지금 외각이라 뱅킹이 안 돼서요." },
+                { type: 'sent', text: "직접 결제하셔야 할 것 같은데요..." },
+                { type: 'recv', text: "사장님, 제가 이따가 식대 200만원 결제할 때 이 술값 90만원까지 합쳐서 긁을게요. 서비스 비용으로 제가 10만원 더 얹어드릴게요." },
+                { type: 'recv', text: "중요한 분들이라 그래요. 사장님만 믿고 제가 주류업체 연락처 드릴 테니 선입금 좀 부탁드려도 될까요?" },
+                { type: 'sent', text: "그럼 계좌번호랑 업체 알려주세요." },
+                { type: 'recv', text: "[중화주류] 010-0000-XXXX 여기로 90만원 넣으시고 영수증 찍어주세요. 이따 뵙겠습니다!" },
+                { type: 'recv', text: "(입금 확인 후, 예약 시간 직전 전화기가 꺼지며 '노쇼' 발생)" }
             ],
-            result: "대리구매 사기",
-            desc: "식당 업주에게 큰 예약을 빌미로 신뢰를 얻은 뒤, 주류 대금을 가짜 업체에 입금하게 만드는 수법입니다."
+            result: "식당 예약 노쇼(No-Show) 사기",
+            desc: "1. <b>신뢰 구축</b>: 단체 예약을 미끼로 업주를 들뜨게 함.<br>2. <b>상황 제시</b>: 급한 사정(운전 중, 뱅킹 불가)을 핑계로 대리 결제 요청.<br>3. <b>보상 심리</b>: '수수료 추가 지급' 제안으로 의심을 차단함."
         },
         {
-            title: "육군 32사단 박대위",
+            title: "군부대 납품 사기 (박대위)",
             icon: "🪖",
             dialogs: [
-                { type: 'recv', text: "안녕하십니까 사장님, 육군 32사단 박대위입니다. 이번 별관 신축 공사 건으로 연락드렸습니다." },
-                { type: 'sent', text: "아 네, 대위님. 말씀하세요." },
-                { type: 'recv', text: "입찰을 위해서는 부대 내에 '마노 미터기'가 5개 구비되어야 합니다." },
-                { type: 'recv', text: "지정 업체(010-XXXX)에 연락해서 사단 공사 건이라고 하시고 150만원 선결제 부탁드립니다." },
-                { type: 'sent', text: "공식 절차 맞나요? 바로 입금하겠습니다." },
-                { type: 'recv', text: "확인되면 부대 방문 일정 잡겠습니다. (입금 후 연락 두절)" }
+                { type: 'recv', text: "안녕하십니까, 육군 32사단 시설관리팀 박대위입니다. 귀사 홈페이지 보고 공사 견적 건으로 연락드렸습니다." },
+                { type: 'sent', text: "아, 네! 박대위님. 어떤 공사인가요?" },
+                { type: 'recv', text: "부대 예비군 훈련장 별관 신축 건입니다. 지역 업체 우선 선정 대상이셔서 저희가 MOU 체결을 검토 중입니다." },
+                { type: 'recv', text: "다만 부대 보안 규정상, 공사 시작 전에 '마노 미터기'라는 장비가 5개 구비되어야 실사 통과가 됩니다." },
+                { type: 'sent', text: "저희는 그런 장비는 취급 안 하는데요?" },
+                { type: 'recv', text: "그래서 저희 사단 지정 업체인 [산업자재유통] 연락처를 드릴 겁니다. 거기 사단 공사 건이라고 하시고 150만원 결제해서 확보해 두세요." },
+                { type: 'recv', text: "이거 영수증 제출하시면 나중에 국방부 예산으로 전액 보전해 드리고 공사 대금도 선지급해 드립니다." },
+                { type: 'sent', text: "네, 알려주신 업체로 입금하고 영수증 보내겠습니다." },
+                { type: 'recv', text: "확인됐습니다. 내일 부대 정문에서 뵙겠습니다. (이후 연락 두절 및 물품 미배송)" }
             ],
-            result: "공공기관 사칭 사기",
-            desc: "군부대나 관공서의 큰 공사 계약을 미끼로, 듣도 보도 못한 물품(마노 미터기 등)의 선구매를 요구합니다."
+            result: "공공기관/군부대 사칭 사기",
+            desc: "1. <b>권위 사칭</b>: 군인, 공무원을 사칭해 압박감을 줌.<br>2. <b>이익 미끼</b>: 큰 공사 계약을 약속하며 눈앞의 작은 결제를 유도.<br>3. <b>허위 물품</b>: 존재하지 않거나 조작된 업체(마노 미터기 등)를 통해 대금 편취."
         },
         {
-            title: "나노기술원 팀장",
-            icon: "🔬",
-            dialogs: [
-                { type: 'recv', text: "한국나노기술원 팀장입니다. 질식소화포를 구입해야 하는데 기존 업체가 단가를 너무 올렸네요." },
-                { type: 'sent', text: "그렇군요. 저희가 도와드릴 일이 있을까요?" },
-                { type: 'recv', text: "저렴한 소매업체를 알려드릴 테니 대신 구매해 주시면 3일 내 대금 승인받아 지급하겠습니다." },
-                { type: 'recv', text: "저희가 예산 한도 초과라 우회 구매가 필요한 상황입니다. 협조 부탁드려요." },
-                { type: 'sent', text: "네, 공기관 일이니 도와드려야죠. 입금하겠습니다." },
-                { type: 'recv', text: "결제 완료 후 영수증 보내주세요. (입금 후 실종)" }
-            ],
-            result: "우회 구매대행 사기",
-            desc: "단가 상승이나 수의계약 한도 초과 등의 그럴듯한 핑계를 대며 제3의 업체를 통해 대신 물건을 사달라고 유도합니다."
-        },
-        {
-            title: "소방본부 팀장",
+            title: "소방 안전 점검형 (팀장)",
             icon: "🔥",
             dialogs: [
-                { type: 'recv', text: "소방본부 팀장입니다. 내일 귀하의 사업장(캠핑장) 소방 점검 예정입니다." },
-                { type: 'sent', text: "점검요? 오늘 처음 듣는 소리인데요." },
-                { type: 'recv', text: "확인하니 질식소화포가 비치 안 되어 있네요. 이거 없으면 점검 통과 안 됩니다." },
-                { type: 'recv', text: "지정 업체에서 구입 후 '혁신제품지정인증서' 받아두면 나중에 구매 대금 전액 환급해 줍니다." },
-                { type: 'sent', text: "환급해 준다니 다행이네요. 바로 구매하겠습니다." },
-                { type: 'recv', text: "지금 바로 송금하시고 인증서 챙기세요. (송금 후 잠적)" }
+                { type: 'recv', text: "소방본부 안전점검팀 최팀장입니다. 내일 오후 귀하의 업장(캠핑장) 소방 특별점검 나갑니다." },
+                { type: 'sent', text: "네? 갑자기 점검이라니요?" },
+                { type: 'recv', text: "최근 화재 사고 때문에 전수 조사 중입니다. 사전 확인하니 질식소화포 비치 의무가 위반된 상태네요." },
+                { type: 'recv', text: "이거 내일 적발되면 과태료 300만원입니다. 지금 바로 조치해 두셔야 해요." },
+                { type: 'sent', text: "당장 어디서 구하나요? 시간이 없는데..." },
+                { type: 'recv', text: "저희가 협약 맺은 업체를 통하면 오늘 바로 퀵으로 보내줄 겁니다. '혁신제품지정인증서' 발급 가능한 업체여야 환급도 받으십니다." },
+                { type: 'recv', text: "80만원 결제하시고 인증서 받아두시면, 점검 후에 나라에서 전액 환급해 주니 손해 볼 거 없으십니다. 빨리 진행하세요." },
+                { type: 'sent', text: "네, 팀장님. 알려주신 업체로 바로 송금하겠습니다." },
+                { type: 'recv', text: "(입금 완료. 다음 날 소방본부에 확인하니 해당 팀장은 존재하지 않음)" }
             ],
-            result: "안전 점검 빙자 사기",
-            desc: "점검 불이익을 언급하며 겁을 주고, 나중에 환급해 준다는 거짓말로 특정 물품의 구매를 강요합니다."
+            result: "기관 점검 빙자 사기",
+            desc: "1. <b>공포심 조장</b>: '과태료', '특별 점검' 키워드로 판단력을 흐림.<br>2. <b>해결책 제시</b>: 본인들이 짜놓은 업체로 유도하여 즉시 결제 요구.<br>3. <b>환급 약속</b>: '나라에서 환급해 준다'는 거짓말로 거부감을 없앰."
         }
     ];
 
-    function startSim(index) {
-        const sc = scripts[index];
+    function startSim(idx) {
+        const sc = scripts[idx];
         document.getElementById('menu-screen').style.display = 'none';
         document.getElementById('chat-screen').style.display = 'flex';
         document.getElementById('header-title').innerText = sc.title;
         document.getElementById('header-icon').innerText = sc.icon;
-        
         play(sc);
     }
 
@@ -181,27 +164,34 @@
         const area = document.getElementById('chat-area');
         const status = document.getElementById('status-bar');
 
-        for (let d of sc.dialogs) {
+        for (let i = 0; i < sc.dialogs.length; i++) {
+            const d = sc.dialogs[i];
+            
+            // 타이핑 대기 시간 조절 (상대방은 조금 길게, 나는 짧게)
             status.innerText = d.type === 'recv' ? "상대방이 입력 중..." : "내가 입력 중...";
-            await new Promise(r => setTimeout(r, 1500));
+            let delay = d.text.length * 30 + 1000;
+            if(d.type === 'sent') delay = 1000;
+            
+            await new Promise(r => setTimeout(r, delay));
             
             const m = document.createElement('div');
             m.className = `msg ${d.type}`;
             m.innerHTML = `<div class="bubble">${d.text}</div>`;
             area.appendChild(m);
+            
             setTimeout(() => m.classList.add('show'), 10);
             area.scrollTop = area.scrollHeight;
 
-            if(d.text.includes("입금") || d.text.includes("송금") || d.text.includes("결제")) {
+            // 특정 키워드 시 강조
+            if(d.text.includes("입금") || d.text.includes("결제") || d.text.includes("환급")) {
                 status.style.color = "#ff4b4b";
-                status.innerText = "⚠️ 경고: 선입금 요구 수법 포착";
-                await new Promise(r => setTimeout(r, 800));
+                status.innerText = "⚠️ 위험 신호: 금전 요구 발생";
             }
         }
 
         await new Promise(r => setTimeout(r, 2000));
         document.getElementById('result-title').innerText = sc.result;
-        document.getElementById('result-desc').innerText = sc.desc;
+        document.getElementById('result-desc').innerHTML = sc.desc;
         document.getElementById('overlay').style.display = 'flex';
     }
 </script>
