@@ -3,159 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI 보이스피싱 체험관 — 대전경찰청</title>
+    <title>기관사칭 사기 체험관 — 대전경찰청</title>
     <style>
-        *{box-sizing:border-box;margin:0;padding:0}
-        body{background:#000;font-family:-apple-system,sans-serif;color:#fff;overflow:hidden;height:100vh}
+        *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+        body{background:#f0f0f0;font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;height:100vh;display:flex;flex-direction:column}
         
-        /* 통화 수신 화면 */
-        #call-screen{display:flex;flex-direction:column;align-items:center;justify-content:space-around;height:100%;background:linear-gradient(to bottom, #1a1a2e, #000)}
-        .caller-info{text-align:center;margin-top:60px}
-        .caller-name{font-size:32px;font-weight:bold;margin-bottom:10px}
-        .caller-label{font-size:16px;color:#4ade80;letter-spacing:2px}
-        
-        .call-actions{display:flex;gap:60px;margin-bottom:80px}
-        .action-btn{width:75px;height:75px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;font-size:30px;cursor:pointer}
-        .accept{background:#4ade80;color:#fff;animation:pulse 1.5s infinite}
-        .decline{background:#ff4b4b;color:#fff}
-        
-        /* 통화 중 화면 */
-        #incall-screen{display:none;flex-direction:column;align-items:center;height:100%;padding:40px 20px}
-        .status{font-size:18px;color:#aaa;margin-top:20px}
-        .timer{font-size:20px;margin-top:10px}
-        .wave-container{display:flex;align-items:center;gap:5px;height:50px;margin-top:100px}
-        .wave{width:5px;height:20px;background:#4ade80;border-radius:10px;transition:0.2s}
-        .active-wave{animation:wave-anim 0.5s infinite alternate}
-        
-        .subtitles{margin-top:40px;text-align:center;font-size:18px;color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.1);padding:15px;border-radius:15px;width:90%;min-height:60px}
-        .end-call-btn{width:70px;height:70px;background:#ff4b4b;border-radius:50%;border:none;margin-top:auto;margin-bottom:50px;font-size:30px}
+        /* 헤더 디자인 (카카오톡 느낌) */
+        header{background:#3a3a3c;color:#fff;padding:15px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10}
+        .back-btn{font-size:20px;cursor:pointer}
+        .profile-img{width:40px;height:40px;background:#ddd;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:20px}
+        .info{flex:1}
+        .info h1{font-size:16px;font-weight:bold}
+        .info p{font-size:11px;color:rgba(255,255,255,0.6)}
 
-        @keyframes pulse {0%{transform:scale(1)} 50%{transform:scale(1.1)} 100%{transform:scale(1)}}
-        @keyframes wave-anim {from{height:10;opacity:0.5} to{height:40;opacity:1}}
+        /* 채팅 영역 */
+        #chat-area{flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:12px;background:#b2c7da}
+        .msg{display:flex;flex-direction:column;max-width:80%;gap:4px}
+        .msg.recv{align-items:flex-start;align-self:flex-start}
+        .msg.sent{align-items:flex-end;align-self:flex-end}
+        
+        .bubble{padding:10px 14px;border-radius:15px;font-size:14px;line-height:1.5;position:relative;word-break:keep-all}
+        .recv .bubble{background:#fff;color:#000;border-top-left-radius:2px}
+        .sent .bubble{background:#fee500;color:#000;border-top-right-radius:2px}
+        
+        .time{font-size:10px;color:rgba(0,0,0,0.4);margin:0 4px}
+
+        /* 하단 선택지 (자동 답변 버튼) */
+        #action-area{background:#fff;padding:15px;border-top:1px solid #ddd;display:none;flex-direction:column;gap:10px}
+        .action-label{font-size:12px;color:#888;text-align:center;margin-bottom:5px}
+        .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+        .chip{background:#f0f0f0;border:1px solid #ddd;padding:10px 16px;border-radius:20px;font-size:14px;cursor:pointer;transition:background 0.2s}
+        .chip:active{background:#ddd}
+
+        /* 결과 화면 오버레이 */
+        #overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:100;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center}
+        .result-card{background:#fff;color:#000;padding:25px;border-radius:20px;width:100%;max-width:320px}
+        .result-card h2{color:#dc2626;margin-bottom:15px}
+        .result-card p{font-size:14px;line-height:1.6;margin-bottom:20px}
+        .btn-retry{background:#000;color:#fff;border:none;padding:12px 25px;border-radius:10px;font-weight:bold;cursor:pointer}
+
+        /* 타이핑 애니메이션 */
+        .typing{font-size:12px;color:#555;margin-left:5px;display:none}
     </style>
 </head>
 <body>
 
-<!-- 1. 전화 수신 화면 -->
-<div id="call-screen">
-    <div class="caller-info">
-        <div class="caller-label">보이스피싱 체험용 가상번호</div>
-        <div class="caller-name">김준호(예약자)</div>
-        <div style="color:#aaa">대전 042-***-****</div>
+<header>
+    <div class="back-btn" onclick="location.reload()">❮</div>
+    <div class="profile-img">🍽</div>
+    <div class="info">
+        <h1>어제 예약하신 분 (김준호)</h1>
+        <p>상대방이 대화를 기다리고 있습니다</p>
     </div>
-    <div class="call-actions">
-        <button class="action-btn decline" onclick="location.reload()">📵</button>
-        <button class="action-btn accept" onclick="startInCall()">📞</button>
+</header>
+
+<div id="chat-area">
     </div>
-    <div style="font-size:13px;color:#666;padding:20px">통화 버튼을 누르면 AI와 대화가 시작됩니다.</div>
+
+<div id="action-area">
+    <div class="action-label">원하시는 답변을 선택하세요</div>
+    <div class="chips" id="chip-container"></div>
 </div>
 
-<!-- 2. 통화 중 화면 -->
-<div id="incall-screen">
-    <div class="caller-name">김준호(예약자)</div>
-    <div class="status" id="call-status">대화 중...</div>
-    <div class="timer" id="timer">00:00</div>
-    
-    <div class="wave-container" id="waves">
-        <div class="wave"></div><div class="wave"></div><div class="wave"></div><div class="wave"></div><div class="wave"></div>
+<div id="overlay">
+    <div class="result-card">
+        <h2>⚠️ 사기 확인</h2>
+        <p id="result-text"></p>
+        <button class="btn-retry" onclick="location.reload()">처음으로 돌아가기</button>
     </div>
-
-    <div class="subtitles" id="subtitles">AI가 말을 걸 때까지 잠시만 기다려주세요.</div>
-
-    <button class="end-call-btn" onclick="location.reload()">📞</button>
 </div>
 
 <script>
-    let recognition;
-    let isSpeaking = false;
-    let seconds = 0;
+    const chatArea = document.getElementById('chat-area');
+    const chipContainer = document.getElementById('chip-container');
+    const actionArea = document.getElementById('action-area');
+    const overlay = document.getElementById('overlay');
+    const resultText = document.getElementById('result-text');
 
-    // 1. 통화 시작
-    function startInCall() {
-        document.getElementById('call-screen').style.display = 'none';
-        document.getElementById('incall-screen').style.display = 'flex';
+    // 시나리오 데이터
+    const scenario = {
+        start: {
+            msg: "안녕하세요 사장님, 어제 저녁에 8명 회식 예약했던 김준호입니다. 다름이 아니라 부탁 하나만 드려도 될까 해서요.",
+            options: [
+                { text: "네, 어떤 부탁이신가요?", next: "request" },
+                { text: "누구신지 기억이 잘 안 나는데요.", next: "identity" }
+            ]
+        },
+        identity: {
+            msg: "아이고 사장님~ 서운합니다. 어제 저녁에 전화로 예약했잖아요. 덩치 좀 있고 목소리 큰 사람요! 기억나시죠?",
+            options: [
+                { text: "아 네, 기억납니다. 무슨 일이세요?", next: "request" }
+            ]
+        },
+        request: {
+            msg: "제가 단골 주류업체에 '궈자오' 2병을 주문했는데, 거기가 현금만 받는다고 하네요. 제가 지금 운전 중이라... 사장님이 90만원만 먼저 입금해 주시면 안 될까요? 제가 도착하자마자 식대랑 합쳐서 결제할게요.",
+            options: [
+                { text: "계좌번호 알려주세요.", next: "scam_hit" },
+                { text: "가게에 현금이 없어서 어려울 것 같습니다.", next: "pressure" },
+                { text: "사기 아니에요? 경찰에 신고할게요.", next: "report" }
+            ]
+        },
+        pressure: {
+            msg: "에이 사장님, 저희 오늘 회식 예산만 150만원 넘게 잡았는데... 이 술 없으면 회식이 안 되거든요. 단골 업체라 믿으셔도 됩니다. 정 안되면 50만원이라도 먼저 안 될까요?",
+            options: [
+                { text: "알겠습니다. 계좌번호 주세요.", next: "scam_hit" },
+                { text: "죄송합니다. 직접 하셔야 할 것 같아요.", next: "fail" }
+            ]
+        },
+        scam_hit: {
+            msg: "감사합니다 사장님! 역시 통이 크시네요. [중화주류 010-0000-1234] 이쪽으로 90만원 입금해 주시고 확인 문자 부탁드립니다!",
+            options: [
+                { text: "입금했습니다. 이따 뵙겠습니다.", next: "end_hit" }
+            ]
+        },
+        report: {
+            msg: "(상대방이 채팅방을 나갔습니다.)",
+            options: [],
+            result: "현명한 대처입니다! 사기범들은 '신고'나 '경찰' 언급 시 즉시 대화를 중단하고 도망갑니다. 기관을 사칭하며 대리 송금을 요구하는 것은 100% 사기입니다."
+        },
+        fail: {
+            msg: "아... 그럼 됐습니다. 예약 취소할게요.",
+            options: [],
+            result: "잘 거절하셨습니다! 사기범은 본인의 요구가 받아들여지지 않으면 노골적으로 불쾌해하거나 예약을 취소하겠다고 협박하지만, 절대 송금해서는 안 됩니다."
+        },
+        end_hit: {
+            msg: "확인했습니다. 이따 뵙죠. (이후 연락 두절)",
+            options: [],
+            result: "안타깝지만 사기에 당하셨습니다. 사기범은 입금 확인 직후 잠적합니다. 식당 예약 후 주류나 물품 대금을 대신 결제해달라는 것은 전형적인 사기 수법입니다."
+        }
+    };
+
+    function addMessage(type, text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `msg ${type}`;
         
-        // 타이머 시작
-        setInterval(() => {
-            seconds++;
-            let m = Math.floor(seconds / 60).toString().padStart(2, '0');
-            let s = (seconds % 60).toString().padStart(2, '0');
-            document.getElementById('timer').innerText = `${m}:${s}`;
-        }, 1000);
-
-        // 첫 인사 시작
-        setTimeout(() => {
-            aiSpeak("사장님 안녕하세요, 어제 저녁에 8명 회식 예약한 김준호라고 하는데요. 다름이 아니라 부탁 하나만 드려도 될까 해서요.");
-        }, 1000);
+        const now = new Date();
+        const timeStr = `${now.getHours()}:${now.getMinutes()}`;
+        
+        msgDiv.innerHTML = `
+            <div class="bubble">${text}</div>
+            <div class="time">${timeStr}</div>
+        `;
+        
+        chatArea.appendChild(msgDiv);
+        chatArea.scrollTop = chatArea.scrollHeight;
     }
 
-    // 2. AI가 말하기 (TTS)
-    function aiSpeak(text) {
-        isSpeaking = true;
-        setWaves(true);
-        document.getElementById('subtitles').innerText = text;
-        
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'ko-KR';
-        utterance.rate = 1.0;
-        
-        utterance.onend = () => {
-            isSpeaking = false;
-            setWaves(false);
-            startListening(); // 대답이 끝나면 듣기 시작
-        };
-        
-        window.speechSynthesis.speak(utterance);
-    }
+    async function progress(stepKey) {
+        actionArea.style.display = 'none';
+        const step = scenario[stepKey];
 
-    // 3. 사용자 말 듣기 (STT)
-    function startListening() {
-        if (!('webkitSpeechRecognition' in window)) {
-            alert("이 브라우저는 음성 인식을 지원하지 않습니다. 크롬이나 사파리를 이용해주세요.");
+        // AI 메시지 전송 (약간의 지연으로 실제 채팅 느낌)
+        if (step.msg) {
+            await new Promise(res => setTimeout(res, 800));
+            addMessage('recv', step.msg);
+        }
+
+        // 결과 페이지 체크
+        if (step.result) {
+            await new Promise(res => setTimeout(res, 1500));
+            resultText.innerText = step.result;
+            overlay.style.display = 'flex';
             return;
         }
 
-        document.getElementById('call-status').innerText = "내 목소리 듣는 중...";
-        recognition = new webkitSpeechRecognition();
-        recognition.lang = 'ko-KR';
-        recognition.interimResults = false;
-
-        recognition.onresult = (event) => {
-            const userText = event.results[0][0].transcript;
-            document.getElementById('subtitles').innerText = "나: " + userText;
-            processResponse(userText);
-        };
-
-        recognition.onerror = () => {
-            if(!isSpeaking) aiSpeak("잘 안 들리는데 다시 말씀해 주시겠어요?");
-        };
-
-        recognition.start();
-    }
-
-    // 4. 대화 로직 (시나리오)
-    function processResponse(text) {
-        document.getElementById('call-status').innerText = "AI 생각 중...";
-        let reply = "";
-
-        if (text.includes("부탁") || text.includes("말해") || text.includes("뭔데")) {
-            reply = "아 별건 아니고요, 제가 주류 업체에 술을 좀 시켰는데 거기서 현금만 받는대서요. 사장님이 90만원만 먼저 보내주시면 안 될까요? 제가 가서 바로 드릴게요.";
-        } else if (text.includes("돈") || text.includes("입금") || text.includes("계좌")) {
-            reply = "네, 중화주류 010-0000-1234 여기로 지금 바로 보내주시면 됩니다. 사장님만 믿을게요.";
-        } else if (text.includes("경찰") || text.includes("신고") || text.includes("사기")) {
-            reply = "아... 뭐라는 거야... 바빠 죽겠는데 진짜!";
-            setTimeout(() => { location.reload(); }, 2000); // 사기 들키면 종료
-        } else {
-            reply = "사장님? 제 말 듣고 계시죠? 90만원만 주류 업체에 입금해 주시면 됩니다. 지금 가능하시죠?";
+        // 선택지 표시
+        if (step.options && step.options.length > 0) {
+            await new Promise(res => setTimeout(res, 500));
+            chipContainer.innerHTML = '';
+            step.options.forEach(opt => {
+                const btn = document.createElement('div');
+                btn.className = 'chip';
+                btn.innerText = opt.text;
+                btn.onclick = () => {
+                    addMessage('sent', opt.text);
+                    progress(opt.next);
+                };
+                chipContainer.appendChild(btn);
+            });
+            actionArea.style.display = 'flex';
         }
-
-        setTimeout(() => aiSpeak(reply), 1000);
     }
 
-    function setWaves(active) {
-        const waves = document.querySelectorAll('.wave');
-        waves.forEach(w => active ? w.classList.add('active-wave') : w.classList.remove('active-wave'));
-    }
+    // 초기 실행
+    window.onload = () => {
+        progress('start');
+    };
 </script>
+
 </body>
 </html>
