@@ -1,522 +1,211 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>기관사칭 사기 체험 시뮬레이터 — 대전경찰청</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:#000;font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR','Apple SD Gothic Neo',sans-serif;color:#fff}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>기관사칭 사기 체험 시뮬레이터 — 대전경찰청</title>
+    <style>
+        /* 기존 스타일 유지 및 가독성 보완 */
+        *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+        html,body{height:100%;background:#000;font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;color:#fff;overflow:hidden}
+        #intro, #chat-screen, #result-screen { position: absolute; top:0; left:0; width:100%; height:100%; overflow-y:auto; display:none; flex-direction:column; }
+        
+        /* 인트로 디자인 */
+        #intro{display:flex; background:#0a0a14; align-items:center; justify-content:center; padding:32px 24px; gap:20px; text-align:center}
+        .badge{background:#dc2626; color:#fff; font-size:11px; font-weight:700; padding:4px 14px; border-radius:20px}
+        .intro-title{font-size:26px; font-weight:800; line-height:1.3}
+        .method-grid{display:grid; grid-template-columns:1fr; gap:12px; width:100%; max-width:340px}
+        .method-btn{border:none; border-radius:14px; padding:18px 20px; text-align:left; cursor:pointer; display:flex; align-items:center; gap:14px; background:#1a1a1e; color:#fff}
+        
+        /* 채팅 UI */
+        #chat-screen{background:#1c1c1e}
+        .chat-header{background:#111; padding:15px; display:flex; align-items:center; gap:12px; border-bottom:1px solid #333}
+        .header-icon{width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px}
+        .messages{flex:1; padding:20px 15px; display:flex; flex-direction:column; gap:15px}
+        .mw{display:flex; flex-direction:column; gap:5px}
+        .mw.recv{align-items:flex-start}
+        .mw.sent{align-items:flex-end}
+        .bubble{max-width:85%; padding:12px 16px; border-radius:18px; font-size:15px; line-height:1.5; position:relative}
+        .bubble.recv{background:rgba(255,255,255,0.1); border-bottom-left-radius:4px}
+        .bubble.sent{background:#007aff; border-bottom-right-radius:4px}
+        
+        /* 경고 바 */
+        .warn-bar{background:rgba(255,152,0,0.15); border-left:4px solid #ff9800; padding:10px 15px; margin:5px 10px; border-radius:4px; color:#ffb74d; font-size:13px; font-weight:600; animation: shake 0.5s}
+        @keyframes shake { 0%, 100% {transform:translateX(0)} 25% {transform:translateX(-5px)} 75% {transform:translateX(5px)} }
 
-/* ── 인트로 ── */
-#intro{min-height:100vh;background:#0a0a14;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:20px;text-align:center}
-.badge{background:#dc2626;color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:.04em}
-.intro-title{font-size:28px;font-weight:800;line-height:1.3;color:#fff}
-.intro-sub{font-size:14px;color:rgba(255,255,255,.5);line-height:1.7;max-width:320px}
-.method-grid{display:grid;grid-template-columns:1fr;gap:12px;width:100%;max-width:340px}
-.method-btn{border:none;border-radius:14px;padding:18px 20px;text-align:left;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:14px;transition:opacity .15s}
-.method-btn:active{opacity:.8}
-.method-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-.method-label{font-size:11px;font-weight:700;letter-spacing:.05em;margin-bottom:3px}
-.method-title{font-size:15px;font-weight:700;color:#fff}
-.method-desc{font-size:12px;color:rgba(255,255,255,.55);margin-top:2px;line-height:1.4}
-.warn-note{background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.25);border-radius:10px;padding:11px 16px;font-size:12.5px;color:#fef08a;line-height:1.6;max-width:340px}
-.brand{font-size:11px;color:rgba(255,255,255,.2)}
-
-/* ── 채팅 화면 ── */
-#chat-screen{display:none;flex-direction:column;width:100%;height:100vh;background:#1c1c1e}
-
-.chat-header{background:#111;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
-.back-btn{width:28px;height:28px;display:flex;flex-direction:column;justify-content:center;gap:5px;cursor:pointer;flex-shrink:0}
-.back-btn span{display:block;width:16px;height:1.5px;background:#fff;border-radius:1px}
-.back-btn span:nth-child(1){transform:rotate(45deg) translate(2.5px,2.5px)}
-.back-btn span:nth-child(2){transform:rotate(-45deg) translate(2.5px,-2.5px)}
-.header-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
-.header-name{font-size:15px;font-weight:600;color:#fff;flex:1}
-.header-sub{font-size:11px;color:rgba(255,255,255,.4)}
-.method-tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;flex-shrink:0}
-
-.messages{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
-.messages::-webkit-scrollbar{display:none}
-
-.mw{display:flex;flex-direction:column;gap:3px}
-.mw.recv{align-items:flex-start}.mw.sent{align-items:flex-end}
-.spk{font-size:10px;color:rgba(255,255,255,.3);padding:0 4px}
-.bubble{max-width:80%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.6;word-break:keep-all}
-.bubble.recv{background:rgba(255,255,255,.11);color:rgba(255,255,255,.92);border-top-left-radius:3px}
-.bubble.sent{background:#0a84ff;color:#fff;border-top-right-radius:3px}
-.bubble.typing{background:rgba(255,255,255,.11);color:rgba(255,255,255,.4);font-size:13px;border-top-left-radius:3px;min-width:52px;text-align:center;letter-spacing:4px}
-.divider{text-align:center;font-size:11px;color:rgba(255,255,255,.25);padding:3px 0}
-.warn-bar{background:rgba(234,179,8,.13);border-left:3px solid #ca8a04;border-radius:0 10px 10px 0;padding:9px 12px;font-size:12.5px;color:#fef08a;line-height:1.55;max-width:88%;align-self:center}
-.end-banner{background:#dc2626;border-radius:12px;padding:13px 16px;max-width:90%;align-self:center;text-align:center}
-.end-banner p{font-size:13px;color:#fff;line-height:1.6}
-
-.chips{display:flex;flex-wrap:wrap;gap:7px;padding:10px 12px;background:#2c2c2e;flex-shrink:0}
-.chip{background:rgba(255,255,255,.1);border:0.5px solid rgba(255,255,255,.2);border-radius:18px;padding:7px 14px;color:rgba(255,255,255,.85);font-size:13px;cursor:pointer;font-family:inherit}
-.chip:active{background:rgba(255,255,255,.2)}
-
-.input-row{background:#2c2c2e;padding:10px 12px;display:flex;gap:9px;align-items:flex-end;border-top:0.5px solid rgba(255,255,255,.1);flex-shrink:0}
-.input-row textarea{flex:1;background:rgba(255,255,255,.09);border:none;border-radius:20px;padding:9px 16px;color:#fff;font-size:14px;font-family:inherit;resize:none;outline:none;max-height:90px;line-height:1.45;min-height:38px}
-.input-row textarea::placeholder{color:rgba(255,255,255,.28)}
-.send-btn{width:38px;height:38px;border-radius:50%;background:#0a84ff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.send-btn:disabled{background:rgba(255,255,255,.15)}
-.send-btn svg{width:16px;height:16px}
-
-/* ── 결과 ── */
-#result-screen{display:none;flex-direction:column;min-height:100vh;background:#0a0a14;padding:28px 20px;gap:14px}
-.r-head{text-align:center}
-.r-head h2{font-size:20px;font-weight:800;color:#fff;margin-bottom:5px}
-.r-head p{font-size:13px;color:rgba(255,255,255,.4)}
-.r-section{font-size:11px;color:rgba(255,255,255,.3);letter-spacing:.05em;margin:4px 0 8px}
-.r-item{display:flex;gap:12px;padding:13px 14px;background:rgba(255,255,255,.05);border-radius:12px;margin-bottom:8px;align-items:flex-start}
-.r-item.hit{background:rgba(220,38,38,.12);border:0.5px solid rgba(220,38,38,.3)}
-.rdot{width:8px;height:8px;border-radius:50%;background:#dc2626;flex-shrink:0;margin-top:4px}
-.rdot.dim{background:rgba(255,255,255,.2)}
-.rt{font-size:13.5px;font-weight:700;color:#fff;margin-bottom:3px}
-.rd{font-size:12.5px;color:rgba(255,255,255,.55);line-height:1.6}
-.r-tip{background:rgba(48,209,88,.1);border:0.5px solid rgba(48,209,88,.3);border-radius:12px;padding:14px 16px;font-size:13px;color:#30d158;line-height:1.7}
-.r-cta{background:#dc2626;border:none;border-radius:14px;padding:15px;width:100%;color:#fff;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;margin-top:4px}
-.r-retry{background:rgba(255,255,255,.07);border:0.5px solid rgba(255,255,255,.2);border-radius:14px;padding:14px;width:100%;color:rgba(255,255,255,.65);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
-.r-brand{text-align:center;font-size:11px;color:rgba(255,255,255,.2);padding-bottom:24px}
-</style>
+        /* 입력창 */
+        .input-row{background:#2c2c2e; padding:15px; display:flex; gap:10px; align-items:center}
+        #inp{flex:1; background:rgba(255,255,255,0.05); border:none; border-radius:20px; padding:10px 15px; color:#fff; font-size:15px; outline:none}
+        .send-btn{width:40px; height:40px; border-radius:50%; background:#007aff; border:none; color:#fff; font-weight:bold}
+        
+        /* 결과 화면 */
+        #result-screen{background:#0a0a14; padding:30px 20px; text-align:center}
+        .r-item{background:rgba(220,38,38,0.1); border:1px solid rgba(220,38,38,0.3); padding:15px; border-radius:12px; margin-bottom:10px; text-align:left}
+        .r-cta{background:#dc2626; color:#fff; border:none; padding:18px; border-radius:12px; width:100%; font-size:18px; font-weight:800; margin-top:20px}
+    </style>
 </head>
 <body>
 
-<!-- 인트로 -->
 <div id="intro">
-  <div class="badge">사기 예방 체험 시뮬레이터</div>
-  <div class="intro-title">기관사칭 사기<br>직접 체험해보세요</div>
-  <div class="intro-sub">실제 피해 수법을 AI와 직접 대화하며<br>어디서 의심해야 할지 몸으로 익히세요</div>
-
-  <div class="method-grid">
-    <button class="method-btn" style="background:#1a1208" onclick="startSim(0)">
-      <div class="method-icon" style="background:#2a1f08">🍽</div>
-      <div>
-        <div class="method-label" style="color:#ca8a04">수법 1-①</div>
-        <div class="method-title">식당예약형</div>
-        <div class="method-desc">회식 예약 후 주류 대리구매 요청</div>
-      </div>
-    </button>
-    <button class="method-btn" style="background:#0a1422" onclick="startSim(1)">
-      <div class="method-icon" style="background:#0f1f3a">🪖</div>
-      <div>
-        <div class="method-label" style="color:#3b82f6">수법 1-②</div>
-        <div class="method-title">계약미끼형</div>
-        <div class="method-desc">군부대·교도소 납품 제안 후 선구매 요구</div>
-      </div>
-    </button>
-    <button class="method-btn" style="background:#1a0e06" onclick="startSim(2)">
-      <div class="method-icon" style="background:#2a1508">📋</div>
-      <div>
-        <div class="method-label" style="color:#ea580c">수법 1-③</div>
-        <div class="method-title">긴급감사형</div>
-        <div class="method-desc">소방·위생점검 빙자 즉시 구매 요구</div>
-      </div>
-    </button>
-  </div>
-
-  <div class="warn-note">※ 이것은 대전경찰청의 사기 예방 교육용 시뮬레이션입니다</div>
-  <div class="brand">대전경찰청 범죄예방계</div>
-</div>
-
-<!-- 채팅 화면 -->
-<div id="chat-screen">
-  <div class="chat-header">
-    <div class="back-btn" onclick="goIntro()"><span></span><span></span></div>
-    <div class="header-icon" id="h-icon"></div>
-    <div style="flex:1;min-width:0">
-      <div class="header-name" id="h-name"></div>
-      <div class="header-sub" id="h-sub"></div>
+    <div class="badge">대전경찰청 예방 시뮬레이터</div>
+    <div class="intro-title">기관사칭 사기<br>직접 체험해보세요</div>
+    <div class="method-grid">
+        <button class="method-btn" onclick="startSim(0)">
+            <div style="font-size:30px">🍽</div>
+            <div>
+                <div style="font-size:12px; color:#aaa">수법 1</div>
+                <div style="font-weight:700">식당예약형 (대리구매)</div>
+            </div>
+        </button>
+        <button class="method-btn" onclick="startSim(1)">
+            <div style="font-size:30px">🪖</div>
+            <div>
+                <div style="font-size:12px; color:#aaa">수법 2</div>
+                <div style="font-weight:700">군부대 사칭 (납품미끼)</div>
+            </div>
+        </button>
     </div>
-    <div class="method-tag" id="h-tag"></div>
-  </div>
-  <div class="messages" id="messages"></div>
-  <div class="chips" id="chips" style="display:none"></div>
-  <div class="input-row" id="input-row">
-    <textarea id="inp" placeholder="메시지 입력..." rows="1" onkeydown="handleKey(event)" oninput="resize(this)"></textarea>
-    <button class="send-btn" id="send-btn" onclick="send()">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-  </div>
+    <p style="font-size:12px; color:#666">※ 본 페이지는 교육 목적으로 제작된 가상 시뮬레이션입니다.</p>
 </div>
 
-<!-- 결과 -->
-<div id="result-screen" id="result-screen"></div>
+<div id="chat-screen">
+    <div class="chat-header">
+        <div class="header-icon" id="h-icon"></div>
+        <div>
+            <div id="h-name" style="font-weight:700"></div>
+            <div style="font-size:11px; color:#888">실시간 대화 중</div>
+        </div>
+    </div>
+    <div class="messages" id="messages"></div>
+    <div class="input-row">
+        <input type="text" id="inp" placeholder="메시지를 입력하세요..." onkeypress="if(event.keyCode==13)send()">
+        <button class="send-btn" onclick="send()">전송</button>
+    </div>
+</div>
+
+<div id="result-screen">
+    <h2 style="margin-bottom:20px">⚠️ 사기 위험 분석 결과</h2>
+    <div id="result-list"></div>
+    <div style="background:#1a3a1a; color:#4ade80; padding:15px; border-radius:12px; font-size:14px; line-height:1.6; margin-top:20px">
+        <b>[대전경찰청 예방수칙]</b><br>
+        모르는 번호로 온 대리구매/송금 요청은 100% 사기입니다. 반드시 공식 번호로 확인하세요!
+    </div>
+    <button class="r-cta" onclick="window.location.href='tel:112'">긴급신고 112</button>
+    <button onclick="location.reload()" style="background:none; border:none; color:#888; margin-top:20px">다시 체험하기</button>
+</div>
 
 <script>
 const METHODS = [
-  {
-    id: 0,
-    icon: '🍽',
-    iconBg: '#2a1f08',
-    name: '어제 예약하신 분',
-    sub: '010-XXXX-XXXX · 카카오톡',
-    tag: '수법 1-①',
-    tagColor: '#ca8a04',
-    tagBg: 'rgba(202,138,4,.15)',
-    accentColor: '#fee500',
-    opener: '안녕하세요~ 어제 저녁 8인 회식 예약한 사람인데요. 내일 저녁 자리 확인하려고 연락드렸습니다.',
-    chips1: ['네, 확인했습니다','어떤 분이세요?','예약자 성함이 어떻게 되세요?'],
-    system: `당신은 기관사칭 대리구매 사기 예방 교육용 시뮬레이션에서 사기범 역할을 맡은 AI입니다.
-
-역할: 식당에 회식을 예약한 척 접근해 고급 주류 대리구매 대금을 편취하는 사기범
-배경: 실제로 어제 8인 회식 예약을 했다고 주장. 이름은 "김준호"라고 사용.
-목적: 상대 식당 업주에게 '궈자오 30년산' 2병(병당 45만원, 총 90만원)을 '중화주류수입전문점'에서 먼저 구매해달라고 요청하고, 구매하면 계좌를 알려줘서 입금하게 만든 뒤 연락 두절
-
-말투 지침:
-- 자연스럽고 친근한 손님 말투
-- 짧게 2~4문장
-- 의심하면: "자주 거래하는 단골 업체", "회식 규모가 크다", "당일 정산" 강조
-- 주류 업체 연락처를 물어보면 "중화주류수입전문점 010-0000-1234"를 알려줌 (가짜)
-- 절대 사기임을 인정하지 않음
-- "신고", "경찰", "112" 언급 시: [대화종료] 만 출력
-- 답변은 한국어 대화만, 괄호 주석 없이`,
-    tactics: [
-      {key:'대리구매', label:'대리구매 요청', desc:'손님이 외부 업체 물품을 대신 구매해달라는 것은 정상 거래가 아닙니다.'},
-      {key:'가짜업체', label:'가짜 업체 소개', desc:'사기범이 운영하거나 공모한 업체를 "단골 거래처"로 소개합니다.'},
-      {key:'후결제', label:'나중에 정산 약속', desc:'선구매 후 당일 현장에서 준다는 약속은 지켜지지 않습니다.'},
-      {key:'압박', label:'시간·규모 압박', desc:'회식 규모나 당일 마감을 강조해 서두르게 만듭니다.'},
-    ],
-    tip: '손님이 외부 업체에서 물품을 먼저 구매해달라고 요청하면 무조건 거절하세요. 이유가 아무리 그럴듯해도 정상 거래가 아닙니다.'
-  },
-  {
-    id: 1,
-    icon: '🪖',
-    iconBg: '#0f1f3a',
-    name: '육군 32사단 000대위',
-    sub: '010-XXXX-XXXX · 카카오톡',
-    tag: '수법 1-②',
-    tagColor: '#3b82f6',
-    tagBg: 'rgba(59,130,246,.15)',
-    accentColor: '#60a5fa',
-    opener: '안녕하세요. 저 육군 32사단 시설팀 박대위인데요. 혹시 지금 통화 가능하세요? 다음 달 예비군 훈련장 별관 신축 공사 건으로 연락드렸습니다.',
-    chips1: ['네, 말씀하세요','어떤 공사인가요?','연락처가 어떻게 되세요?'],
-    system: `당신은 기관사칭 대리구매 사기 예방 교육용 시뮬레이션에서 사기범 역할을 맡은 AI입니다.
-
-역할: 육군 32사단 시설팀 "박대위"를 사칭해 공사 계약을 미끼로 물품 선구매를 요구하는 사기범
-목적: 공사업체 업주에게 입찰 조건으로 '마노 미터기 5개(개당 30만원, 총 150만원)'를 먼저 구매해달라고 유도
-
-말투 지침:
-- 공손하고 신뢰감 있는 군 장교 말투
-- 2~4문장으로 짧게
-- 의심하면: 사단 번호, 공사 내용 상세 설명, "부대 방문 시 전액 정산" 반복
-- 확인 요청 시: "부대 보안상 외부 전화 연결이 어렵다"로 막기
-- "마노 미터기" 구매처는 "산업자재유통 010-1234-5678" (가짜 업체)
-- 절대 사기임을 인정하지 않음
-- "신고", "경찰", "112" 언급 시: [대화종료] 만 출력
-- 답변은 한국어 대화만, 괄호 주석 없이`,
-    tactics: [
-      {key:'계약미끼', label:'큰 계약을 미끼로', desc:'공사·납품 등 금액이 큰 계약을 먼저 언급해 기대감을 만듭니다.'},
-      {key:'입찰조건', label:'입찰 조건으로 선구매', desc:'방문·미팅 전 물품을 먼저 준비해야 한다는 조건은 실재하지 않습니다.'},
-      {key:'확인차단', label:'부대 보안 핑계로 확인 차단', desc:'"보안상 외부 연결 불가"로 공식 확인을 막습니다.'},
-      {key:'가짜업체', label:'가짜 유통업체 알선', desc:'사기범이 공모한 가짜 업체를 소개해 구매 대금을 가로챕니다.'},
-    ],
-    tip: '군부대·공공기관은 입찰 조건으로 물품 선구매를 요구하지 않습니다. 반드시 국방부 민원실(1577-9090)이나 해당 사단 공식 번호로 직접 확인하세요.'
-  },
-  {
-    id: 2,
-    icon: '📋',
-    iconBg: '#2a1508',
-    name: '서구 소방서 점검팀 (사칭)',
-    sub: '010-XXXX-XXXX · 카카오톡',
-    tag: '수법 1-③',
-    tagColor: '#ea580c',
-    tagBg: 'rgba(234,88,12,.15)',
-    accentColor: '#fb923c',
-    opener: '안녕하세요. 저 서구 소방서 소방점검팀 최주임입니다. 오늘 오후 2시에 해당 건물 소방안전점검이 예정되어 있어서 사전 안내 드리려고요.',
-    chips1: ['네, 알겠습니다','어떤 점검인가요?','점검 공문 받은 게 없는데요'],
-    system: `당신은 기관사칭 대리구매 사기 예방 교육용 시뮬레이션에서 사기범 역할을 맡은 AI입니다.
-
-역할: 소방서 점검팀 "최주임"을 사칭해 긴급 소방점검을 빌미로 소방기구 선구매를 유도하는 사기범
-목적: 업주에게 "기준 미달" 소화기 문제를 경고한 뒤 특정 소방기구업체(ABC소방기구)에서 투척소화기 10개(80만원)를 즉시 구매하게 유도
-
-말투 지침:
-- 공무원 말투, 친절하지만 단호하게
-- 2~4문장
-- 의심하면: 점검 일정, 과태료 금액(최대 300만원) 언급
-- 대표번호 확인 요청 시: "오늘 점검 인원 전부 현장 이동 중이라 연결이 안 된다"
-- ABC소방기구 연락처: "010-9876-5432" (가짜)
-- "오늘 오후 4시까지" 시간 압박 반복
-- 절대 사기임을 인정하지 않음
-- "신고", "경찰", "112" 언급 시: [대화종료] 만 출력
-- 답변은 한국어 대화만, 괄호 주석 없이`,
-    tactics: [
-      {key:'공식빙자', label:'공식 점검 일정 빙자', desc:'소방·위생·세무 점검 등 거부하기 어려운 공식 절차를 가장합니다.'},
-      {key:'과태료', label:'과태료·불이익 협박', desc:'"지금 안 하면 과태료"로 냉정한 판단을 방해합니다.'},
-      {key:'특정업체', label:'특정 업체 연결', desc:'가짜 소방기구 업체를 소개해 구매 대금을 편취합니다.'},
-      {key:'확인차단', label:'공식 확인 차단', desc:'"전원 현장 이동 중"으로 대표번호 확인을 막습니다.'},
-    ],
-    tip: '소방서·관공서는 전화로 특정 업체를 소개하거나 즉시 구매를 요구하지 않습니다. 119 또는 해당 소방서 대표번호로 직접 확인하세요.'
-  }
+    {
+        name: '김준호 (예약자)', icon: '🍽', bg: '#2a1f08',
+        opener: '사장님 안녕하세요, 어제 8인 회식 예약한 사람입니다. 다름이 아니라 부탁 하나만 드려도 될까요?',
+        rules: [
+            { key: ['누구', '어디', '성함'], resp: '어제 저녁에 전화로 예약했잖아요~ 김준호라고 합니다. 기억 안 나세요?' },
+            { key: ['부탁', '뭔데', '말씀'], resp: '제가 단골 주류업체에 궈자오 30년산 2병을 주문했는데, 거기서 현금만 받는다고 해서요. 사장님이 먼저 입금해주시면 제가 이따 가서 식대랑 합쳐서 결제해드릴게요.' },
+            { key: ['입금', '돈', '계좌'], resp: '중화주류 010-0000-1234 여기로 90만원만 보내주시면 됩니다. 지금 바로 가능하실까요?' },
+            { key: ['안돼', '싫어', '직접'], resp: '아유 사장님, 제가 지금 운전 중이라 급해서 그래요. 큰 손님 놓치실 거예요?' }
+        ],
+        tactics: [
+            {id: 't1', label: '대리구매 유도', desc: '외부 업체에 대신 입금해달라는 요구는 전형적인 사기입니다.'},
+            {id: 't2', label: '가짜 업체 알선', desc: '사기범과 공모한 가짜 연락처를 알려줍니다.'}
+        ]
+    },
+    {
+        name: '박대위 (육군32사단)', icon: '🪖', bg: '#0f1f3a',
+        opener: '안녕하십니까 사장님, 육군 32사단 박대위입니다. 이번 부대 공사 건으로 견적 좀 여쭤보려 합니다.',
+        rules: [
+            { key: ['공사', '견적', '어떤'], resp: '부대 내 시설 보수공사 건인데, 조건이 하나 있습니다. 저희가 지정한 특수 미터기를 미리 구비해두셔야 계약이 가능합니다.' },
+            { key: ['미터기', '구매', '어디'], resp: '산업자재유통(010-1234-5678) 여기에 연락해서 사단 공사 건이라고 하면 바로 보내줄 겁니다. 선결제 후 영수증 주세요.' },
+            { key: ['돈', '얼마', '입금'], resp: '개당 30만원씩 총 150만원입니다. 부대 예산은 나중에 한꺼번에 정산되니 걱정 마십시오.' }
+        ],
+        tactics: [
+            {id: 't3', label: '기관 사칭', desc: '공공기관이나 군부대를 사칭하여 신뢰를 얻습니다.'},
+            {id: 't4', label: '선결제 요구', desc: '계약 조건으로 특정 업체 물품 구매를 강요하는 것은 사기입니다.'}
+        ]
+    }
 ];
 
-let curMethod = null;
-let history = [];
-let ended = false;
-let detected = [];
+let currentSim = null;
+let detected = new Set();
+let isEnded = false;
 
 function startSim(idx) {
-  curMethod = METHODS[idx];
-  history = [];
-  ended = false;
-  detected = [];
-
-  document.getElementById('intro').style.display = 'none';
-  const cs = document.getElementById('chat-screen');
-  cs.style.display = 'flex';
-  cs.style.flexDirection = 'column';
-  document.getElementById('result-screen').style.display = 'none';
-
-  const m = curMethod;
-  const icon = document.getElementById('h-icon');
-  icon.textContent = m.icon;
-  icon.style.background = m.iconBg;
-  document.getElementById('h-name').textContent = m.name;
-  document.getElementById('h-sub').textContent = m.sub;
-  const tag = document.getElementById('h-tag');
-  tag.textContent = m.tag;
-  tag.style.color = m.tagColor;
-  tag.style.background = m.tagBg;
-  tag.style.borderRadius = '10px';
-  tag.style.padding = '3px 8px';
-  tag.style.fontSize = '10px';
-  tag.style.fontWeight = '700';
-
-  document.getElementById('messages').innerHTML = '';
-  document.getElementById('chips').style.display = 'none';
-  document.getElementById('input-row').style.display = 'flex';
-  document.getElementById('send-btn').disabled = false;
-  document.getElementById('inp').value = '';
-
-  setTimeout(() => {
-    addBubble('recv', m.name, m.opener);
-    history.push({ role: 'assistant', content: m.opener });
-    setChips(m.chips1);
-  }, 600);
+    currentSim = METHODS[idx];
+    document.getElementById('intro').style.display = 'none';
+    document.getElementById('chat-screen').style.display = 'flex';
+    
+    const iconEl = document.getElementById('h-icon');
+    iconEl.textContent = currentSim.icon;
+    iconEl.style.background = currentSim.bg;
+    document.getElementById('h-name').textContent = currentSim.name;
+    
+    setTimeout(() => addBubble('recv', currentSim.opener), 500);
 }
 
-function goIntro() {
-  document.getElementById('chat-screen').style.display = 'none';
-  document.getElementById('result-screen').style.display = 'none';
-  document.getElementById('intro').style.display = 'flex';
-  document.getElementById('intro').style.flexDirection = 'column';
+function addBubble(type, text) {
+    const box = document.getElementById('messages');
+    const wrap = document.createElement('div');
+    wrap.className = 'mw ' + type;
+    wrap.innerHTML = `<div class="bubble ${type}">${text}</div>`;
+    box.appendChild(wrap);
+    box.scrollTop = box.scrollHeight;
 }
 
-function addBubble(type, speaker, text) {
-  const wrap = document.createElement('div');
-  wrap.className = 'mw ' + type;
-  const sp = document.createElement('div');
-  sp.className = 'spk';
-  sp.textContent = speaker;
-  const b = document.createElement('div');
-  b.className = 'bubble ' + type;
-  b.textContent = text;
-  wrap.appendChild(sp);
-  wrap.appendChild(b);
-  document.getElementById('messages').appendChild(wrap);
-  scrollBottom();
-  if (type === 'recv') checkWarn(text);
-}
-
-function addWarn(text) {
-  const d = document.createElement('div');
-  d.className = 'warn-bar';
-  d.textContent = '주의 — ' + text;
-  document.getElementById('messages').appendChild(d);
-  scrollBottom();
-}
-
-function addTyping() {
-  const wrap = document.createElement('div');
-  wrap.id = 'typing'; wrap.className = 'mw recv';
-  const sp = document.createElement('div');
-  sp.className = 'spk'; sp.textContent = curMethod.name;
-  const b = document.createElement('div');
-  b.className = 'bubble typing'; b.textContent = '···';
-  wrap.appendChild(sp); wrap.appendChild(b);
-  document.getElementById('messages').appendChild(wrap);
-  scrollBottom();
-}
-function removeTyping() { const el = document.getElementById('typing'); if (el) el.remove(); }
-function scrollBottom() { const m = document.getElementById('messages'); m.scrollTop = m.scrollHeight; }
-
-function setChips(arr) {
-  const c = document.getElementById('chips');
-  c.innerHTML = '';
-  arr.forEach(l => {
-    const b = document.createElement('button');
-    b.className = 'chip'; b.textContent = l;
-    b.onclick = () => submit(l);
-    c.appendChild(b);
-  });
-  c.style.display = 'flex';
-}
-
-function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }
-function resize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 90) + 'px'; }
 function send() {
-  const inp = document.getElementById('inp');
-  const t = inp.value.trim();
-  if (!t || ended) return;
-  inp.value = ''; inp.style.height = 'auto';
-  document.getElementById('chips').style.display = 'none';
-  submit(t);
+    const inp = document.getElementById('inp');
+    const text = inp.value.trim();
+    if(!text || isEnded) return;
+
+    addBubble('sent', text);
+    inp.value = '';
+
+    // 사기 감지 로직
+    if(text.includes("신고") || text.includes("경찰") || text.includes("112")) {
+        setTimeout(() => {
+            addBubble('recv', '... (상대방이 전화를 끊었습니다)');
+            isEnded = true;
+            setTimeout(showResult, 1500);
+        }, 1000);
+        return;
+    }
+
+    // 시나리오 답변 검색
+    let response = "무슨 말씀이신지 잘 모르겠네요. 일단 제가 말씀드린 것부터 처리해주시면 안 될까요?";
+    for(let rule of currentSim.rules) {
+        if(rule.key.some(k => text.includes(k))) {
+            response = rule.resp;
+            if(rule.key.includes('입금')) detected.add(currentSim.tactics[1].id);
+            if(rule.key.includes('부탁')) detected.add(currentSim.tactics[0].id);
+            break;
+        }
+    }
+
+    // 경고 알림 표시 (교육용)
+    if(response.includes("입금") || response.includes("구매")) {
+        showWarn("잠깐! 특정 업체로 송금을 유도하고 있습니다.");
+    }
+
+    setTimeout(() => addBubble('recv', response), 1000);
 }
 
-async function submit(text) {
-  if (ended) return;
-  addBubble('sent', '나', text);
-  history.push({ role: 'user', content: text });
-  document.getElementById('send-btn').disabled = true;
-  document.getElementById('chips').style.display = 'none';
-  addTyping();
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 300,
-        system: curMethod.system,
-        messages: history
-      })
-    });
-    const data = await res.json();
-    removeTyping();
-    const reply = (data.content?.[0]?.text || '').trim();
-
-    if (reply === '[대화종료]' || reply.includes('[대화종료]')) {
-      forceEnd(); return;
-    }
-
-    addBubble('recv', curMethod.name, reply);
-    history.push({ role: 'assistant', content: reply });
-  } catch (e) {
-    removeTyping();
-    addBubble('recv', curMethod.name, '(잠시 연결이 끊겼습니다...)');
-  }
-  document.getElementById('send-btn').disabled = false;
-  document.getElementById('inp').focus();
-}
-
-function checkWarn(text) {
-  const m = curMethod;
-  const t = text;
-  if (m.id === 0) {
-    if ((t.includes('구매') || t.includes('주류') || t.includes('술')) && !detected.includes('대리구매')) {
-      detected.push('대리구매');
-      setTimeout(() => addWarn('대리구매 요청 — 손님이 외부 물품을 대신 구매해달라는 것은 사기 수법입니다'), 300);
-    }
-    if ((t.includes('업체') || t.includes('전화') || t.includes('연락처')) && !detected.includes('가짜업체')) {
-      detected.push('가짜업체');
-      setTimeout(() => addWarn('가짜 업체 소개 — 사기범과 공모한 업체입니다. 절대 송금하지 마세요'), 300);
-    }
-    if ((t.includes('정산') || t.includes('당일') || t.includes('음식값')) && !detected.includes('후결제')) {
-      detected.push('후결제');
-      setTimeout(() => addWarn('나중에 정산 약속 — 입금 후 연락 두절이 됩니다'), 300);
-    }
-  }
-  if (m.id === 1) {
-    if ((t.includes('구매') || t.includes('미터기') || t.includes('준비')) && !detected.includes('계약미끼')) {
-      detected.push('계약미끼');
-      setTimeout(() => addWarn('입찰 조건 선구매 요구 — 군부대·공공기관은 이런 방식으로 입찰하지 않습니다'), 300);
-    }
-    if ((t.includes('보안') || t.includes('연결이') || t.includes('확인')) && !detected.includes('확인차단')) {
-      detected.push('확인차단');
-      setTimeout(() => addWarn('확인 차단 — 공식 연락처로 직접 확인을 시도하세요'), 300);
-    }
-    if ((t.includes('업체') || t.includes('유통') || t.includes('전화')) && !detected.includes('가짜업체')) {
-      detected.push('가짜업체');
-      setTimeout(() => addWarn('가짜 유통업체 알선 — 사기범 공모 업체입니다. 구매하면 피해 확정'), 300);
-    }
-  }
-  if (m.id === 2) {
-    if ((t.includes('점검') || t.includes('과태료') || t.includes('기준')) && !detected.includes('공식빙자')) {
-      detected.push('공식빙자');
-      setTimeout(() => addWarn('공식 점검 빙자 — 소방서는 전화로 즉시 구매를 요구하지 않습니다'), 300);
-    }
-    if ((t.includes('업체') || t.includes('소방기구') || t.includes('구매')) && !detected.includes('특정업체')) {
-      detected.push('특정업체');
-      setTimeout(() => addWarn('특정 업체 연결 — 가짜 소방기구 업체입니다. 구매하지 마세요'), 300);
-    }
-    if ((t.includes('이동 중') || t.includes('현장') || t.includes('연결이 안')) && !detected.includes('확인차단')) {
-      detected.push('확인차단');
-      setTimeout(() => addWarn('확인 차단 수법 — 119 또는 소방서 대표번호로 직접 확인하세요'), 300);
-    }
-    if ((t.includes('오늘') || t.includes('4시') || t.includes('빨리')) && !detected.includes('압박')) {
-      detected.push('압박');
-      setTimeout(() => addWarn('시간 압박 — 급할수록 먼저 전화를 끊고 직접 확인하세요'), 300);
-    }
-  }
-}
-
-function forceEnd() {
-  ended = true;
-  const msgs = document.getElementById('messages');
-  const dv = document.createElement('div');
-  dv.className = 'divider'; dv.textContent = '상대방이 대화를 종료했습니다';
-  msgs.appendChild(dv);
-  const eb = document.createElement('div');
-  eb.className = 'end-banner';
-  eb.innerHTML = '<p><b>신고 언급 즉시 대화 종료</b><br>이것이 기관사칭 사기의 전형입니다<br>피해가 발생했다면 즉시 112</p>';
-  msgs.appendChild(eb);
-  scrollBottom();
-  document.getElementById('input-row').style.display = 'none';
-  document.getElementById('chips').style.display = 'none';
-  setTimeout(showResult, 1200);
+function showWarn(msg) {
+    const b = document.createElement('div');
+    b.className = 'warn-bar';
+    b.textContent = '⚠️ ' + msg;
+    document.getElementById('messages').appendChild(b);
 }
 
 function showResult() {
-  document.getElementById('chat-screen').style.display = 'none';
-  const rs = document.getElementById('result-screen');
-  rs.style.display = 'flex';
-  rs.style.flexDirection = 'column';
-  rs.innerHTML = '';
-
-  const m = curMethod;
-  const found = m.tactics.filter(t => detected.includes(t.key));
-  const rest = m.tactics.filter(t => !detected.includes(t.key));
-
-  const head = document.createElement('div');
-  head.className = 'r-head';
-  head.innerHTML = `<h2>대화 분석 결과</h2><p>${m.tag} · 이번 대화에서 확인된 수법</p>`;
-  rs.appendChild(head);
-
-  if (found.length) {
-    const sl = document.createElement('div'); sl.className = 'r-section'; sl.textContent = `등장한 수법 (${found.length}건)`;
-    rs.appendChild(sl);
-    found.forEach(t => {
-      const it = document.createElement('div'); it.className = 'r-item hit';
-      it.innerHTML = `<div class="rdot"></div><div><div class="rt">${t.label}</div><div class="rd">${t.desc}</div></div>`;
-      rs.appendChild(it);
+    document.getElementById('chat-screen').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'flex';
+    const list = document.getElementById('result-list');
+    
+    currentSim.tactics.forEach(t => {
+        const item = document.createElement('div');
+        item.className = 'r-item';
+        item.innerHTML = `<b>${t.label}</b><br><small style="color:#aaa">${t.desc}</small>`;
+        list.appendChild(item);
     });
-  }
-  if (rest.length) {
-    const sl2 = document.createElement('div'); sl2.className = 'r-section'; sl2.style.marginTop = '8px'; sl2.textContent = '추가로 알아두세요';
-    rs.appendChild(sl2);
-    rest.forEach(t => {
-      const it = document.createElement('div'); it.className = 'r-item';
-      it.innerHTML = `<div class="rdot dim"></div><div><div class="rt" style="color:rgba(255,255,255,.7)">${t.label}</div><div class="rd">${t.desc}</div></div>`;
-      rs.appendChild(it);
-    });
-  }
-
-  const tip = document.createElement('div'); tip.className = 'r-tip';
-  tip.textContent = m.tip;
-  rs.appendChild(tip);
-
-  const cta = document.createElement('button'); cta.className = 'r-cta';
-  cta.textContent = '피해 신고 — 112'; cta.onclick = () => window.location.href = 'tel:112';
-  rs.appendChild(cta);
-
-  const retry = document.createElement('button'); retry.className = 'r-retry';
-  retry.textContent = '다른 수법 체험하기'; retry.onclick = goIntro;
-  rs.appendChild(retry);
-
-  const brand = document.createElement('div'); brand.className = 'r-brand';
-  brand.textContent = '대전경찰청 범죄예방계 · 기관사칭사기 예방 홍보';
-  rs.appendChild(brand);
 }
 </script>
 </body>
