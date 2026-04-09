@@ -7,8 +7,8 @@
     <style>
         *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
         
-        /* 모바일 전체 화면 높이 고정 */
-        html, body { height: 100%; width: 100%; overflow: hidden; }
+        /* 모바일 전체 화면 높이 고정 및 스크롤 방지 */
+        html, body { height: 100%; width: 100%; overflow: hidden; position: fixed; }
         body { background: #b2c7da; font-family: -apple-system, sans-serif; display: flex; flex-direction: column; }
         
         header { background: #1a237e; color: #fff; padding: 15px; display: flex; align-items: center; gap: 12px; z-index: 10; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
@@ -16,7 +16,7 @@
         .info h1 { font-size: 17px; font-weight: bold; letter-spacing: -0.5px; }
         .info p { font-size: 11px; color: rgba(255,255,255,0.7); }
 
-        /* 메뉴 화면 스크롤 가능 */
+        /* 메뉴 화면 */
         #menu-screen { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; background: #f4f4f4; -webkit-overflow-scrolling: touch; }
         .menu-instr { font-size: 14px; color: #444; margin-bottom: 8px; font-weight: bold; border-left: 4px solid #1a237e; padding-left: 10px; }
         .menu-card { background: #fff; padding: 16px; border-radius: 15px; border: 1px solid #ddd; cursor: pointer; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -25,13 +25,9 @@
         .menu-text h2 { font-size: 14px; color: #1a237e; font-weight: bold; }
         .menu-text p { font-size: 11px; color: #666; margin-top: 2px; }
 
-        /* 채팅 화면 구조 고정 */
+        /* 채팅 화면 */
         #chat-screen { display: none; flex-direction: column; height: 100%; flex: 1; position: relative; overflow: hidden; }
-        
-        /* 실제 대화창만 스크롤 되도록 설정 */
         #chat-area { flex: 1; overflow-y: scroll; padding: 15px; display: flex; flex-direction: column; gap: 15px; background: #b2c7da; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
-        
-        /* 스크롤바 숨기기 (선택사항) */
         #chat-area::-webkit-scrollbar { display: none; }
 
         .msg { display: flex; flex-direction: column; max-width: 85%; gap: 4px; opacity: 0; transform: translateY(15px); transition: all 0.5s ease-out; flex-shrink: 0; }
@@ -44,6 +40,7 @@
 
         #status-bar { background: #1a237e; color: #fff; padding: 12px; text-align: center; font-size: 13px; font-weight: bold; flex-shrink: 0; }
 
+        /* 팝업 모달 */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         #danger-modal { background: rgba(0,0,0,0.85); }
         #result-modal { background: rgba(0,0,0,0.95); }
@@ -61,7 +58,7 @@
     <div id="header-icon" class="profile-img">참</div>
     <div class="info">
         <h1 id="header-title">대전경찰청 사기 수법 시연</h1>
-        <p id="header-sub">실제 범행 사례 기반 자동 시연 시스템</p>
+        <p id="header-sub">공식 범죄예방 교육 시스템</p>
     </div>
 </header>
 
@@ -97,11 +94,9 @@
 </div>
 
 <script>
-    // [데이터 생략 - 이전과 동일]
     const scripts = [
         {
-            title: "1. 식당 예약형 (300만 원)",
-            icon: "🍽",
+            title: "1. 식당 예약형 (300만 원)", icon: "🍽",
             dialogs: [
                 { type: 'recv', text: "사장님 안녕하세요! 저 어제 저녁에 회식 예약했던 김준호라고 합니다. 기억하시죠?" },
                 { type: 'sent', text: "네, 김 사장님. 8시 20명 예약 확인했습니다." },
@@ -115,10 +110,8 @@
                 { type: 'sent', text: "알겠습니다. 계좌 주세요." },
                 { type: 'recv', text: "[중화주류] 010-XXXX-XXXX 여기로 300만 원 송금하시고 영수증 찍어주세요. 바로 가겠습니다!" }
             ],
-            result: "예약 미끼 대리결제 사기",
-            desc: "단체 예약을 빌미로 신뢰를 얻은 뒤, 고가의 물품 대금을 가짜 업체 계좌로 입금하게 만드는 수법입니다."
+            result: "예약 미끼 대리결제 사기", desc: "단체 예약을 빌미로 신뢰를 얻은 뒤, 고가의 물품 대금을 가짜 업체 계좌로 입금하게 만드는 수법입니다."
         },
-        // ... 나머지 2, 3, 4, 5 수법 데이터 (이전 코드와 동일하므로 지면상 요약합니다)
         {
             title: "2. 재화용역 계약형 (1,000만 원)", icon: "🪖",
             dialogs: [
@@ -184,9 +177,7 @@
 
     async function playNext() {
         if (isPaused || currentIndex >= currentScript.dialogs.length) {
-            if (currentIndex >= currentScript.dialogs.length) {
-                showFinalResult();
-            }
+            if (currentIndex >= currentScript.dialogs.length) showFinalResult();
             return;
         }
 
@@ -198,12 +189,12 @@
         if (d.type === 'sent') speed = 900;
 
         await new Promise(r => setTimeout(r, speed));
-
         addBubble(d.type, d.text);
         
         if (d.warn) {
             isPaused = true;
-            setTimeout(() => showDangerModal(d.warn), 600);
+            // 위험 지점 포착 알림을 0.3초 더 늦게 (총 900ms 지연) 띄움
+            setTimeout(() => showDangerModal(d.warn), 900);
         } else {
             currentIndex++;
             playNext();
@@ -217,10 +208,9 @@
         m.innerHTML = `<div class="bubble">${text}</div>`;
         area.appendChild(m);
         
-        // 메시지 추가 후 애니메이션 및 스크롤 처리
         setTimeout(() => {
             m.classList.add('show');
-            scrollToBottom();
+            area.scrollTop = area.scrollHeight;
         }, 10);
 
         if(text.includes("입금") || text.includes("결제") || text.includes("송금") || text.includes("만 원") || text.includes("억")) {
@@ -229,12 +219,6 @@
         } else {
             document.getElementById('status-bar').style.color = "#fff";
         }
-    }
-
-    // 스마트폰 브라우저 최적화 스크롤 함수
-    function scrollToBottom() {
-        const area = document.getElementById('chat-area');
-        area.scrollTop = area.scrollHeight;
     }
 
     function showDangerModal(msg) {
@@ -247,7 +231,10 @@
         isPaused = false;
         currentIndex++;
         playNext();
-        setTimeout(scrollToBottom, 100);
+        setTimeout(() => {
+            const area = document.getElementById('chat-area');
+            area.scrollTop = area.scrollHeight;
+        }, 100);
     }
 
     function showFinalResult() {
